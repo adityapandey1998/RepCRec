@@ -1,15 +1,14 @@
 package Data;
 
 import Transactions.Constants;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class LockManager {
 
-  String variableId;
   public Lock currentLock;
   public List<QueuedLock> queue;
+  String variableId;
 
   public LockManager(String variableId) {
     this.variableId = variableId;

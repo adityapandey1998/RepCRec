@@ -1,13 +1,11 @@
 import Transactions.TransactionManager;
-
 import java.io.File;
 
 /**
- * This class is the main entry point to process the transactions.
- * The input file needs to be provided as a command line argument.
+ * This class is the main entry point to process the transactions. The input file needs to be
+ * provided as a command line argument.
  *
  * @author Aditya Pandey, Shubham Jha
- *
  */
 public class Main {
 

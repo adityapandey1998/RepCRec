@@ -49,7 +49,7 @@ public class TransactionManager {
    */
   private boolean checkAndHandleDeadlock() {
     Map<String, Set<String>> blockingGraph = new HashMap<>();
-    Map<String, Set<String>> graph;
+    Map<String, HashSet<String>> graph;
     for (DataManager dataManager : sites) {
       if (dataManager.isUp()) {
         graph = dataManager.generateBlockingGraph();
