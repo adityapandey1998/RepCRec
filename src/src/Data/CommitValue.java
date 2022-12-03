@@ -1,7 +1,7 @@
 package Data;
 
 /**
- * Class to represent committed values in a transaction.
+ * Class to represent a committed value in a transaction.
  *
  * @author Shubham Jha
  */
