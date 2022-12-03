@@ -89,7 +89,7 @@ public class LockManager {
         return new ArrayList<>(
                 this.lockArray.stream()
                 .filter(lock -> lock.getVariableID() == variableID)
-                .collect(Collectors.toList())
+                .collect(Collectors.toCollection(ArrayList::new))
         );
     }
 
