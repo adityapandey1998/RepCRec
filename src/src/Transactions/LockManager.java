@@ -17,36 +17,22 @@ public class LockManager {
     }
 
     public boolean canAcquireReadLock(int variableID, String transactionID) {
-        ArrayList<Lock> locks = this.getLocks(variableID);
-        if (locks.isEmpty()) {
-            return true;
-        }
-        boolean hasWriteLock = false;
-        for (int i = 0; i < locks.size(); i++) {
-            if (locks.get(i).getLockType() == Constants.LockType.WRITE
-                    && !locks.get(i).getTransactionId().equals(transactionID)) {
-                hasWriteLock = true;
-            }
-        }
-        if (hasWriteLock) {
-            return false;
-        } else {
-            return true;
-        }
+        return !this.lockArray.stream()
+                .anyMatch(lock -> lock.getTransactionId().equals(transactionID) &&
+                        lock.getVariableID() == variableID &&
+                        lock.getLockType()== Constants.LockType.WRITE);
     }
 
     public void acquireReadLock(int variableID, String transactionID) {
         if (this.canAcquireReadLock(variableID, transactionID)) {
             this.addLock(variableID, transactionID, Constants.LockType.READ);
-        } else {
-            return;
         }
     }
 
     public void promoteReadLockToWriteLock(int variableID, String transactionID) {
         for (int i = 0; i < this.lockArray.size(); i++) {
-            if (this.lockArray.get(i).getTransactionId().equals(transactionID) &&
-                    this.lockArray.get(i).getVariableID() == variableID &&
+            if (this.lockArray.get(i).getVariableID() == variableID &&
+                    this.lockArray.get(i).getTransactionId().equals(transactionID) &&
                     this.lockArray.get(i).getLockType() == Constants.LockType.READ
             ) {
                 this.lockArray.get(i).setLockType(Constants.LockType.WRITE);
@@ -54,35 +40,20 @@ public class LockManager {
         }
     }
 
-    // TODO: remove if unused
     public boolean lockExistsForTransaction(String transactionID) {
-        for (int i = 0; i < this.lockArray.size(); i++) {
-            if (this.lockArray.get(i).getTransactionId().equals(transactionID)) {
-                return true;
-            }
-        }
-        return false;
+        return this.lockArray.stream().anyMatch(lock -> lock.getTransactionId().equals(transactionID));
     }
 
-    // TODO: remove if unused
     public boolean lockExistsOnVariable(int variableID) {
-        for (int i = 0; i < this.lockArray.size(); i++) {
-            if (this.lockArray.get(i).getVariableID() == variableID) {
-                return true;
-            }
-        }
-        return false;
+        return this.lockArray.stream().anyMatch(lock -> lock.getVariableID() == variableID);
     }
 
     public boolean lockExists(int variableID, String transactionID, Constants.LockType type) {
-        for (int i = 0; i < this.lockArray.size(); i++) {
-            if (this.lockArray.get(i).getVariableID() == variableID
-                    && this.lockArray.get(i).getTransactionId().equals(transactionID)
-                    && this.lockArray.get(i).getLockType() == type) {
-                return true;
-            }
-        }
-        return false;
+        return this.lockArray.stream()
+                .anyMatch(lock -> lock.getVariableID() == variableID &&
+                        lock.getTransactionId().equals(transactionID) &&
+                        lock.getLockType() == type
+                );
     }
 
     public ArrayList<Lock> getLocks(int variableID) {
@@ -94,30 +65,17 @@ public class LockManager {
     }
 
     public void releaseLock(int variableID, String transactionID, Constants.LockType lockType) {
-        int index = -1;
-        for (int i = 0; i < this.lockArray.size(); i++) {
-            if (this.lockArray.get(i).getVariableID() == variableID
-                    && this.lockArray.get(i).getTransactionId().equals(transactionID)
-                    && this.lockArray.get(i).getLockType() == lockType) {
-                index = i;
-            }
-        }
-        if (index != -1) {
-            this.lockArray.remove(index);
-        } else {
-        }
+        this.lockArray = this.lockArray.stream()
+                .filter(lock -> (lock.getVariableID() != variableID &&
+                                !lock.getTransactionId().equals(transactionID) &&
+                                lock.getLockType() != lockType))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
-
     public void releaseLock(String transactionID) {
-        int i = 0;
-        while (i < this.lockArray.size()) {
-            if (this.lockArray.get(i).getTransactionId().equals(transactionID)) {
-                this.lockArray.remove(i);
-            } else {
-                i++;
-            }
-        }
+        this.lockArray = this.lockArray.stream()
+                .filter(lock -> lock.getTransactionId() != transactionID)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override
@@ -129,5 +87,4 @@ public class LockManager {
 
         return answer.toString();
     }
-
 }
