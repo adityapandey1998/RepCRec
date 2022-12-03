@@ -2,6 +2,11 @@ public class Result {
     boolean success;
     int value;
 
+    public Result(boolean success) {
+        this.success = success;
+        this.value = 0;
+    }
+
     public Result(boolean success, int value) {
         this.success = success;
         this.value = value;

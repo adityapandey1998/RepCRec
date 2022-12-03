@@ -10,7 +10,7 @@ public class DataManager {
     boolean isUp;
     Map<String, Variable> data;
     Map<String, LockManager> lockTable;
-    List<Transaction> failedTransactionList;
+    List<Integer> failedTimestampList;
     List<Transaction> recoveredTransactionList;
 
     DataManager(int siteId) {
@@ -18,7 +18,7 @@ public class DataManager {
         this.isUp = true;
         this.data = new HashMap<>();
         this.lockTable = new HashMap<>();
-        this.failedTransactionList = new ArrayList<>();
+        this.failedTimestampList = new ArrayList<>();
         this.recoveredTransactionList = new ArrayList<>();
 
         for(int varIdx = 1; varIdx <= 20; varIdx++) {
@@ -33,5 +33,32 @@ public class DataManager {
                 this.lockTable.put(varId, new LockManager(varId));
             }
         }
+    }
+
+    boolean hasVariable(String variableId) {
+        return this.data.containsKey(variableId);
+    }
+
+    Result readSnapshot(String variableId, int timestamp) {
+        Variable var = this.data.get(variableId);
+        if(var.isReadable) {
+            for (CommitValue commitValue : var.committedValues) {
+                if(commitValue.getCommitTimestamp() <= timestamp) {
+                    if(var.isReplicated) {
+                        for(int failedTimestamp : this.failedTimestampList) {
+                            if(commitValue.getCommitTimestamp() < failedTimestamp && failedTimestamp <= timestamp) {
+                                return new Result(false);
+                            }
+                        }
+                    }
+                    return new Result(true, commitValue.getValue());
+                }
+            }
+        }
+        return new Result(false);
+    }
+
+    Result read(String transactionId, String variableId) {
+        Variable var = this.data.get(variableId);
     }
 }
