@@ -5,6 +5,8 @@ Replicated Concurrency Control and Recovery (RepCRec)
 - Aditya Pandey, Net ID: ap6624
 - Shubham Jha, Net ID: sj3549
 
+Repository link: https://github.com/adityapandey1998/RepCRec
+
 ## How to run
 Please make sure you have JDK 1.8+
 
