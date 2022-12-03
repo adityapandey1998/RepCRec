@@ -298,7 +298,9 @@ public class DataManager {
                 if (!graph.containsKey(queuedLock.transactionId)) {
                   graph.put(queuedLock.transactionId, new HashSet<>());
                 }
-                graph.get(queuedLock.transactionId).add(transactionId);
+                HashSet<String> tempSet = graph.get(queuedLock.transactionId);
+                tempSet.add(transactionId);
+                graph.put(queuedLock.transactionId, tempSet);
               }
             }
           } else {
@@ -306,7 +308,9 @@ public class DataManager {
               if (!graph.containsKey(queuedLock.transactionId)) {
                 graph.put(queuedLock.transactionId, new HashSet<>());
               }
-              graph.get(queuedLock.transactionId).add(lockManager.currentLock.transactionId);
+              HashSet<String> tempSet = graph.get(queuedLock.transactionId);
+              tempSet.add(lockManager.currentLock.transactionId);
+              graph.put(queuedLock.transactionId, tempSet);
             }
           }
         }
@@ -319,7 +323,9 @@ public class DataManager {
             if (!graph.containsKey(key)) {
               graph.put(key, new HashSet<>());
             }
-            graph.get(key).add(lockManager.queue.get(j).transactionId);
+            HashSet<String> tempSet = graph.get(key);
+            tempSet.add(lockManager.queue.get(j).transactionId);
+            graph.put(key, tempSet);
           }
         }
       }

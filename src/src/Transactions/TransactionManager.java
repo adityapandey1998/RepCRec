@@ -60,7 +60,6 @@ public class TransactionManager {
         });
       }
     }
-    System.out.println(blockingGraph);
     String youngestTransId = null;
     int youngestTransTime = -1;
 

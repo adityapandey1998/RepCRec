@@ -6,13 +6,12 @@ import java.util.Set;
 
 public class ReadLock extends Lock {
 
-  final Constants.LockType lockType = Constants.LockType.READ;
-
   public ReadLock(String variableId, String transactionId) {
     this.variableId = variableId;
     this.transactionIds = new HashSet<>();
     this.transactionIds.add(transactionId);
     this.transactionId = transactionId;
+    this.lockType = Constants.LockType.READ;
   }
 
   public String getVariableId() {
