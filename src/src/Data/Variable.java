@@ -7,7 +7,7 @@ public class Variable {
 
   String variableIdx;
   public boolean isReplicated;
-  Integer tempValue;
+  public TempValue tempValue;
   public boolean isReadable;
 
   public List<CommitValue> committedValues;
@@ -24,7 +24,7 @@ public class Variable {
     return this.committedValues.get(0);
   }
 
-  public Integer getTempValue() {
+  public TempValue getTempValue() {
     return this.tempValue;
   }
 

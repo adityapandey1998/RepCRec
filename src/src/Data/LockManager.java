@@ -26,7 +26,7 @@ public class LockManager {
     this.queue = new ArrayList<>();
   }
 
-  void promoteCurrentLock(WriteLock writeLock) {
+  public void promoteCurrentLock(WriteLock writeLock) {
     if (this.currentLock != null &&
         this.currentLock.lockType == Constants.LockType.READ &&
         this.currentLock.transactionIds.size() == 1 &&

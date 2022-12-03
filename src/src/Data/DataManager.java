@@ -79,7 +79,7 @@ public class DataManager {
           return new Result(false);
         }
         if (currentLock.transactionId.equals(transactionId)) {
-          return new Result(true, var.getTempValue());
+          return new Result(true, var.getTempValue().getValue());
         }
         lockManager.addToQueue(new QueuedLock(variableId, Constants.LockType.READ, transactionId));
         return new Result(false);
@@ -95,9 +95,53 @@ public class DataManager {
     Lock currentLock = lockManager.currentLock;
     if(currentLock != null) {
       if(currentLock.getLockType() == Constants.LockType.READ) {
-
+        if (currentLock.transactionIds.size() != 1) {
+          lockManager.addToQueue(new QueuedLock(variableId, Constants.LockType.WRITE, transactionId));
+          return false;
+        }
+        if (currentLock.transactionIds.contains(transactionId)) {
+          if (lockManager.hasOtherQueuedWriteLock(transactionId)) {
+            lockManager.addToQueue(new QueuedLock(variableId, Constants.LockType.WRITE, transactionId));
+            return false;
+          }
+          return true;
+        }
+        lockManager.addToQueue(new QueuedLock(variableId, Constants.LockType.WRITE, transactionId));
+        return false;
       }
+      if(transactionId.equals(currentLock.transactionId)) {
+        return true;
+      }
+      lockManager.addToQueue(new QueuedLock(variableId, Constants.LockType.WRITE, transactionId));
+      return false;
     }
     return true;
   }
+
+  void write(String transactionId, String variableId, int value) {
+    Variable var = this.data.get(variableId);
+    LockManager lockManager = this.lockTable.get(variableId);
+    Lock currentLock = lockManager.currentLock;
+
+    if(currentLock != null) {
+      if(currentLock.getLockType() == Constants.LockType.READ) {
+        if(currentLock.transactionIds.size() == 1) {
+          if(currentLock.transactionIds.contains(transactionId)) {
+            if(!lockManager.hasOtherQueuedWriteLock(transactionId)) {
+              lockManager.promoteCurrentLock(new WriteLock(variableId, transactionId));
+              var.tempValue = new TempValue(value, transactionId);
+              return;
+            }
+          }
+        }
+      }
+      if(transactionId.equals(currentLock.transactionId)) {
+        var.tempValue = new TempValue(value, transactionId);
+        return;
+      }
+    }
+    lockManager.setCurrentLock(new WriteLock(variableId, transactionId));
+    var.tempValue = new TempValue(value, transactionId);
+  }
+
 }
