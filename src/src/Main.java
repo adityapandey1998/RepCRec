@@ -1,4 +1,4 @@
-import Transactions.TransactionManager;
+import Transactions.TransactionManagerOld;
 
 import java.io.File;
 
@@ -7,9 +7,9 @@ public class Main {
         String fileName = args[0];
         String filePath = new File(fileName).getAbsolutePath();
 
-        TransactionManager transactionManager = new TransactionManager();
+        TransactionManagerOld transactionManagerOld = new TransactionManagerOld();
         try {
-            transactionManager.processInputFile(filePath);
+            transactionManagerOld.processInputFile(filePath);
         } catch (Exception e) {
             e.printStackTrace();
         }
