@@ -17,13 +17,30 @@ public class TransactionManager {
         transactionTable = new HashMap<>();
         operationQueue = new ArrayDeque<>();
 
-
         dataManagerList = new ArrayList<DataManager>();
         for (int siteNo = 0; siteNo<siteCount; siteNo++ ) {
             dataManagerList.add(new DataManager(siteNo+1));
         }
     }
 
+    private void handleDeadlock() {
+        Map<String, Set<String>> blockingGraph = new HashMap<>();
+        Map<String, Set<String>> graph;
+        for (DataManager dataManager: dataManagerList) {
+            if(dataManager.isUp()) {
+                graph = dataManager.generateBlockingGraph();
+                graph.forEach((node, adjList) -> {
+//                    for node, adj_list in graph.items():
+                    Set<String> tempSet = blockingGraph.getOrDefault(node, new HashSet<>());
+                    tempSet.addAll(adjList);
+                    blockingGraph.put(node, tempSet);
+                });
+            }
+        }
+
+        String youngestTransId = null;
+        int youngestTransTime = null;
+    }
     public void processInput(String filePath) throws IOException {
         BufferedReader reader;
         try {
