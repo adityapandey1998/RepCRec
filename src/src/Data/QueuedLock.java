@@ -4,8 +4,6 @@ import Transactions.Constants;
 
 public class QueuedLock extends Lock {
 
-  String transactionId;
-
   public QueuedLock(String variableId, Constants.LockType lockType, String transactionId) {
     this.variableId = variableId;
     this.lockType = lockType;

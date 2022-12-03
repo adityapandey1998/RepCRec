@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class DataManager {
 
@@ -195,6 +196,11 @@ public class DataManager {
   public void commit(String transactionId, int commitTimestamp) {
     for (LockManager lockManager : this.lockTable.values()) {
       lockManager.releaseCurrentLockByTransaction(transactionId);
+      for (QueuedLock queuedLock : lockManager.queue) {
+        if(queuedLock.transactionId.equals(transactionId)) {
+          return;
+        }
+      }
     }
     for (Variable val : this.data.values()) {
       if (val.tempValue != null && val.tempValue.getTransactionId().equals(transactionId)) {

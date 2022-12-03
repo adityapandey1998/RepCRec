@@ -12,6 +12,7 @@ public class ReadLock extends Lock {
     this.variableId = variableId;
     this.transactionIds = new HashSet<>();
     this.transactionIds.add(transactionId);
+    this.transactionId = transactionId;
   }
 
   public String getVariableId() {

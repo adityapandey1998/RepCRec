@@ -74,7 +74,7 @@ public class LockManager {
           this.currentLock = null;
         }
       } else {
-        if (currentLock.transactionId.equals(transactionId)) {
+        if (this.currentLock.transactionId.equals(transactionId)) {
           this.currentLock = null;
         }
       }

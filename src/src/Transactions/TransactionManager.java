@@ -34,7 +34,7 @@ public class TransactionManager {
   public TransactionManager() {
     transactionMap = new HashMap<>();
     operationQueue = new ArrayDeque<>();
-    operationMap = new TreeSet<Operation>();
+    operationMap = new TreeSet<>();
     sites = new ArrayList<>();
     int siteCount = 10;
     for (int siteNo = 0; siteNo < siteCount; siteNo++) {
@@ -113,11 +113,11 @@ public class TransactionManager {
     for (DataManager dataManager : sites) {
       dataManager.abort(transactionId);
       transactionMap.remove(transactionId);
-      if (dueToSiteFailure) {
-        System.out.println("Aborted " + transactionId + " due to site failure!");
-      } else {
-        System.out.println("Aborted " + transactionId + " due to deadlock!");
-      }
+    }
+    if (dueToSiteFailure) {
+      System.out.println("Aborted " + transactionId + " due to site failure!");
+    } else {
+      System.out.println("Aborted " + transactionId + " due to deadlock!");
     }
   }
 
