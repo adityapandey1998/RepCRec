@@ -111,20 +111,52 @@ public class TransactionManager {
                 Transaction transactionToWrite = null;
                 for (Transaction transaction : transactionList) {
                     if (transaction.transactionId.equals(transactionId)) {
-                        transactionToRead = transaction;
+                        transactionToWrite = transaction;
                         break;
                     }
                 }
+            } else if (line.startsWith("fail")) {
+                int siteId = Integer.parseInt(line.substring(5, line.length() - 1).trim());
+                Site siteToFail = null;
+                for (Site site : siteList) {
+                    if (site.siteId == siteId) {
+                        siteToFail = site;
+                        OperationHandlers.siteHandlers.failSite(siteToFail, time);
+                        break;
+                    }
+                }
+                if (siteToFail==null) {
+                    System.out.println("Site doesn't exist");
+                }
+
+            } else if (line.startsWith("recover")) {
+                int siteId = Integer.parseInt(line.substring(8, line.length() - 1).trim());
+                Site siteToRecover = null;
+                for (Site site : siteList) {
+                    if (site.siteId == siteId) {
+                        siteToRecover = site;
+                        OperationHandlers.siteHandlers.recoverSite(siteToRecover, time);
+                        break;
+                    }
+                }
+                if (siteToRecover==null) {
+                    System.out.println("Site doesn't exist");
+                }
             } else if (line.startsWith("end")) {
                 //endTransaction(op.substring(4, op.length() - 1));
-                int siteID = Integer.parseInt(line.substring(4, line.length() - 1).trim());
-                endTransactionList.add(line.substring(4, line.length() - 1));
-            } else if (line.startsWith("fail")) {
-                int siteID = Integer.parseInt(line.substring(5, line.length() - 1).trim());
-                failSite(line.substring(5, line.length() - 1));
-            } else if (line.startsWith("recover")) {
-                int siteID = Integer.parseInt(line.substring(8, line.length() - 1).trim());
-                recoverSite(line.substring(8, line.length() - 1));
+                String transactionId = line.substring(4, line.length() - 1).trim();
+                Transaction transactionToEnd = null;
+                for (Transaction transaction : transactionList) {
+                    if (transaction.transactionId.equals(transactionId)) {
+                        transactionToEnd = transaction;
+                        OperationHandlers.endHandler.endTransaction(transactionToEnd, siteList);
+                        break;
+                    }
+                }
+                if (transactionToEnd == null) {
+                    System.out.println("Nothing to end here!");
+                }
+//                endTransactionList.add(line.substring(4, line.length() - 1));
             }
 
 

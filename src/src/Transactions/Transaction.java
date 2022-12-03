@@ -2,7 +2,7 @@ package Transactions;
 public class Transaction {
 
     public String transactionId;
-    Boolean isLive;
+    public Boolean isLive;
 
     private Constants.TransactionType transactionType;
 
@@ -14,4 +14,5 @@ public class Transaction {
         this.transactionType = transactionType;
         this.startTime = startTime;
     }
+
 }

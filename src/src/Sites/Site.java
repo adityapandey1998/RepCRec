@@ -6,15 +6,15 @@ import java.util.*;
 
 public class Site {
     public int siteId;
-    private boolean siteStatus;
-    private Map<String, List<Lock>> lockMap;
+    public boolean up;
+    public Map<String, List<Lock>> lockMap;
     public Map<String, TreeMap<Integer, Integer>> dataMap;
     public Site(int siteId) {
         this.siteId = siteId;
         this.dataMap = new HashMap<>();
         this.lockMap = new HashMap<>();
         this.startEndTimeMap = new TreeMap<>();
-        this.siteStatus = true;
+        this.up = true;
         this.visitedTransactions = new HashSet<>();
         this.variableStaleStateMap = new HashMap<>();
         this.datacache = new HashMap<>();
