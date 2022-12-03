@@ -202,14 +202,23 @@ public class DataManager {
     var.proposedValue = new ProposedValue(value, transactionId);
   }
 
+  class variableComparator implements Comparator<Variable> {
+    @Override
+    public int compare(Variable a, Variable b) {
+      return Integer.parseInt(a.variableId.substring(1)) - Integer.parseInt(b.variableId.substring(1));
+    }
+  }
+
   /**
    * Dumps the site status and the values of the variables to console.
    */
   public void dump() {
-    String siteStatus = this.isUp ? "UP" : "DOWN";
+    String siteStatus = this.isUp ? "Up" : "Down";
     StringBuilder result = new StringBuilder(
-        String.format("site %d [%s] - ", this.siteId, siteStatus));
-    for (Variable v : this.dataMap.values()) {
+            String.format("Site %d (Status: %s) - ", this.siteId, siteStatus));
+    List<Variable> variableList = new ArrayList<>(this.dataMap.values());
+    Collections.sort(variableList, new variableComparator());
+    for (Variable v : variableList) {
       String varStr = String.format("%s: %d, ", v.variableId, v.getMostRecentlyCommittedValue().getValue());
       result.append(varStr);
     }
