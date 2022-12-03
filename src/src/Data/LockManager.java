@@ -8,7 +8,7 @@ import java.util.List;
 public class LockManager {
 
   String variableId;
-  Lock currentLock;
+  public Lock currentLock;
   List<QueuedLock> queue;
 
   public LockManager(String variableId) {
@@ -36,13 +36,13 @@ public class LockManager {
     }
   }
 
-  void shareReadLock(String transactionId) {
+  public void shareReadLock(String transactionId) {
     if (currentLock.lockType == Constants.LockType.READ) {
       this.currentLock.transactionIds.add(transactionId);
     }
   }
 
-  void addToQueue(QueuedLock newLock) {
+  public void addToQueue(QueuedLock newLock) {
     for (QueuedLock queuedLock : this.queue) {
       if (
           queuedLock.transactionId.equals(newLock.transactionId) &&
@@ -55,7 +55,7 @@ public class LockManager {
     this.queue.add(newLock);
   }
 
-  boolean hasOtherQueuedWriteLock(String transactionId) {
+  public boolean hasOtherQueuedWriteLock(String transactionId) {
     for (QueuedLock queuedLock : this.queue) {
       if (queuedLock.lockType == Constants.LockType.WRITE) {
         if (!transactionId.isEmpty() && queuedLock.transactionId.equals(transactionId)) {

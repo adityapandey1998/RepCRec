@@ -1,72 +1,22 @@
-package Data;
-
+import Data.*;
+import Transactions.Constants;
 import Transactions.Transaction;
 
+import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DataManager {
-
   int siteId;
   boolean isUp;
-
-  public int getSiteId() {
-    return siteId;
-  }
-
-  public void setSiteId(int siteId) {
-    this.siteId = siteId;
-  }
-
-  public boolean isUp() {
-    return isUp;
-  }
-
-  public void setUp(boolean up) {
-    isUp = up;
-  }
-
-  public Map<String, Variable> getData() {
-    return data;
-  }
-
-  public void setData(Map<String, Variable> data) {
-    this.data = data;
-  }
-
-  public Map<String, LockManager> getLockTable() {
-    return lockTable;
-  }
-
-  public void setLockTable(Map<String, LockManager> lockTable) {
-    this.lockTable = lockTable;
-  }
-
-  public List<Integer> getFailedTimestampList() {
-    return failedTimestampList;
-  }
-
-  public void setFailedTimestampList(List<Integer> failedTimestampList) {
-    this.failedTimestampList = failedTimestampList;
-  }
-
-  public List<Transaction> getRecoveredTransactionList() {
-    return recoveredTransactionList;
-  }
-
-  public void setRecoveredTransactionList(
-      List<Transaction> recoveredTransactionList) {
-    this.recoveredTransactionList = recoveredTransactionList;
-  }
-
   Map<String, Variable> data;
   Map<String, LockManager> lockTable;
   List<Integer> failedTimestampList;
   List<Transaction> recoveredTransactionList;
 
-  public DataManager(int siteId) {
+  DataManager(int siteId) {
     this.siteId = siteId;
     this.isUp = true;
     this.data = new HashMap<>();
@@ -74,12 +24,12 @@ public class DataManager {
     this.failedTimestampList = new ArrayList<>();
     this.recoveredTransactionList = new ArrayList<>();
 
-    for (int varIdx = 1; varIdx <= 20; varIdx++) {
+    for(int varIdx = 1; varIdx <= 20; varIdx++) {
       String varId = "x" + varIdx;
-      if (varIdx % 2 == 0) {
+      if(varIdx % 2 == 0) {
         // replicate on all sites
         this.data.put(varId, new Variable(varId,
-            new CommitValue(varIdx * 10, 0), true));
+                new CommitValue(varIdx * 10, 0), true));
         this.lockTable.put(varId, new LockManager(varId));
       } else if (varIdx % 10 + 1 == this.siteId) {
         this.data.put(varId, new Variable(varId, new CommitValue(varIdx * 10, 0), false));
@@ -88,19 +38,18 @@ public class DataManager {
     }
   }
 
-  public boolean hasVariable(String variableId) {
+  boolean hasVariable(String variableId) {
     return this.data.containsKey(variableId);
   }
 
-  public Result readSnapshot(String variableId, int timestamp) {
+  Result readSnapshot(String variableId, int timestamp) {
     Variable var = this.data.get(variableId);
-    if (var.isReadable) {
+    if(var.isReadable) {
       for (CommitValue commitValue : var.committedValues) {
-        if (commitValue.getCommitTimestamp() <= timestamp) {
-          if (var.isReplicated) {
-            for (int failedTimestamp : this.failedTimestampList) {
-              if (commitValue.getCommitTimestamp() < failedTimestamp
-                  && failedTimestamp <= timestamp) {
+        if(commitValue.getCommitTimestamp() <= timestamp) {
+          if(var.isReplicated) {
+            for(int failedTimestamp : this.failedTimestampList) {
+              if(commitValue.getCommitTimestamp() < failedTimestamp && failedTimestamp <= timestamp) {
                 return new Result(false);
               }
             }
@@ -112,7 +61,43 @@ public class DataManager {
     return new Result(false);
   }
 
-  public Result read(String transactionId, String variableId) {
+  Result read(String transactionId, String variableId) {
     Variable var = this.data.get(variableId);
+    if(var.isReadable) {
+      LockManager lockManager = lockTable.get(variableId);
+      Lock currentLock = lockManager.currentLock;
+      if(currentLock != null) {
+        if (currentLock.getLockType() == Constants.LockType.READ) {
+          if (currentLock.transactionIds.contains(transactionId)) {
+            return new Result(true, var.getLastCommittedValue().getValue());
+          }
+          if (!lockManager.hasOtherQueuedWriteLock(transactionId)) {
+            lockManager.shareReadLock(transactionId);
+            return new Result(true, var.getLastCommittedValue().getValue());
+          }
+          lockManager.addToQueue(new QueuedLock(variableId, Constants.LockType.READ, transactionId));
+          return new Result(false);
+        }
+        if (currentLock.transactionId.equals(transactionId)) {
+          return new Result(true, var.getTempValue());
+        }
+        lockManager.addToQueue(new QueuedLock(variableId, Constants.LockType.READ, transactionId));
+        return new Result(false);
+      }
+      lockManager.setCurrentLock(new ReadLock(variableId, transactionId));
+      return new Result(true, var.getLastCommittedValue().getValue());
+    }
+    return new Result(false);
+  }
+
+  boolean getWriteLock(String transactionId, String variableId) {
+    LockManager lockManager = this.lockTable.get(variableId);
+    Lock currentLock = lockManager.currentLock;
+    if(currentLock != null) {
+      if(currentLock.getLockType() == Constants.LockType.READ) {
+
+      }
+    }
+    return true;
   }
 }

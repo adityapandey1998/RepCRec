@@ -2,15 +2,17 @@ package Data;
 
 import Transactions.Constants;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class ReadLock extends Lock {
 
   final Constants.LockType lockType = Constants.LockType.READ;
 
-  public ReadLock(String variableId, Set<String> transactionIds) {
+  public ReadLock(String variableId, String transactionId) {
     this.variableId = variableId;
-    this.transactionIds = transactionIds;
+    this.transactionIds = new HashSet<>();
+    this.transactionIds.add(transactionId);
   }
 
   public String getVariableId() {

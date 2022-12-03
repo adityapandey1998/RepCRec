@@ -6,13 +6,13 @@ import java.util.List;
 public class Variable {
 
   String variableIdx;
-  boolean isReplicated;
+  public boolean isReplicated;
   Integer tempValue;
-  boolean isReadable;
+  public boolean isReadable;
 
-  List<CommitValue> committedValues;
+  public List<CommitValue> committedValues;
 
-  Variable(String variableIdx, CommitValue initialValue, boolean isReplicated) {
+  public Variable(String variableIdx, CommitValue initialValue, boolean isReplicated) {
     this.variableIdx = variableIdx;
     this.committedValues = new ArrayList<>(List.of(initialValue));
     this.tempValue = null;
@@ -20,11 +20,11 @@ public class Variable {
     this.isReadable = true;
   }
 
-  CommitValue getLastCommittedValue() {
+  public CommitValue getLastCommittedValue() {
     return this.committedValues.get(0);
   }
 
-  Integer getTempValue() {
+  public Integer getTempValue() {
     return this.tempValue;
   }
 
