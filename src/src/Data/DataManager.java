@@ -164,11 +164,19 @@ public class DataManager {
     var.tempValue = new TempValue(value, transactionId);
   }
 
+  class variableComparator implements Comparator<Variable> {
+    @Override
+    public int compare(Variable a, Variable b) {
+      return Integer.parseInt(a.variableId.substring(1)) - Integer.parseInt(b.variableId.substring(1));
+    }
+  }
   public void dump() {
-    String siteStatus = this.isUp ? "UP" : "DOWN";
+    String siteStatus = this.isUp() ? "Up" : "Down";
     StringBuilder output = new StringBuilder(
-        String.format("Site %d [%s] - ", this.siteId, siteStatus));
-    for (Variable v : this.data.values()) {
+        String.format("Site %d (Status: %s) - ", this.siteId, siteStatus));
+    List<Variable> variableList = new ArrayList<>(this.data.values());
+    Collections.sort(variableList, new variableComparator());
+    for (Variable v : variableList) {
       String varStr = String.format("%s: %d, ", v.variableId, v.getLastCommittedValue().getValue());
       output.append(varStr);
     }
