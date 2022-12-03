@@ -17,17 +17,12 @@ public class Constants {
     RW, RO
   }
 
-  ;
-
   public enum OperationType {
     READ, WRITE
   }
 
-  ;
-
   public enum LockType {
-    UNLOCK, READ, WRITE
+    READ, WRITE
   }
 
-  ;
 }

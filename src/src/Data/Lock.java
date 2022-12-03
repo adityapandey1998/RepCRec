@@ -4,6 +4,7 @@ import Transactions.Constants;
 import java.util.Set;
 
 /**
+ * Abstract class from which other types of locks are derived.
  * @author Shubham Jha
  */
 public abstract class Lock {
