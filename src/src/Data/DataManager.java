@@ -145,4 +145,17 @@ public class DataManager {
     var.tempValue = new TempValue(value, transactionId);
   }
 
+  void dump() {
+    String siteStatus = this.isUp ? "UP" : "DOWN";
+    StringBuilder output = new StringBuilder(String.format("Site %d [%s] - ", this.siteId, siteStatus));
+    for(Variable v : this.data.values()) {
+      String varStr = String.format("%s: %d, ", v.variableId, v.getLastCommittedValue().getValue());
+      output.append(varStr);
+    }
+    System.out.println(output);
+  }
+
+  void commit(String transactionId, int commitTimestamp) {
+
+  }
 }
