@@ -219,4 +219,27 @@ public class DataManager {
     }
   }
 
+  boolean currentBlocksQueued(Lock currentLock, Lock queuedLock) {
+    if(currentLock.lockType == Constants.LockType.READ) {
+      if(queuedLock.lockType == Constants.LockType.READ ||
+              (currentLock.transactionIds.size() == 1 && currentLock.transactionIds.contains(queuedLock.transactionId))
+      ) {
+        return false;
+      }
+      return true;
+    }
+    return !currentLock.transactionId.equals(queuedLock.transactionId);
+  }
+
+  boolean queuedBlocksQueued(Lock queuedLockLeft, Lock queuedLockRight) {
+    if(queuedLockLeft.lockType == Constants.LockType.READ && queuedLockRight.lockType== Constants.LockType.READ) {
+      return  false;
+    }
+    return !queuedLockLeft.transactionId.equals(queuedLockRight.transactionId);
+  }
+
+  void generateBlockingGraph() {
+
+  }
+
 }
