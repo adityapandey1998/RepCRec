@@ -242,11 +242,51 @@ public class TransactionManager {
         } else if (line.startsWith("fail")) {
             int siteId = Integer.parseInt(line.substring(5, line.length() - 1).trim());
             fail(siteId);
+        } else if (line.startsWith("recover")) {
+            int siteId = Integer.parseInt(line.substring(8, line.length() - 1).trim());
+            recover(siteId);
+        } else if (line.startsWith("end")) {
+            String transactionId = line.substring(4, line.length() - 1).trim();
+            end(transactionId);
+        } else if (line.startsWith("beginRO")) {
+            String transactionId = line.substring(8, line.length() - 1);
+            beginTransaction(transactionId, Constants.TransactionType.RO, time);
+        } else if (line.startsWith("begin")) {
+            String transactionId = line.substring(6, line.length() - 1);
+            beginTransaction(transactionId, Constants.TransactionType.RW, time);
+        } else if (line.startsWith("R")) {
+            String inputLine = line.substring(2, line.length() - 1);
+            String[] inputLineSplit = inputLine.split(",");
+            String transactionId = inputLineSplit[0].trim();
+            String variableName = inputLineSplit[1].trim();
+
+            Transaction transactionToRead = null;
+            for (Transaction transaction : transactionList) {
+                if (transaction.transactionId.equals(transactionId)) {
+                    transactionToRead = transaction;
+                    break;
+                }
+            }
+
         }
+
     }
 
+    private void beginTransaction(String transactionId, Constants.TransactionType transactionType, int time) {
+        if (transactionTable.containsKey(transactionId)) {
+            System.out.println("Transaction " + transactionId + " already exists!");
+        } else {
+            Transaction transaction = new Transaction(transactionId, transactionType, time);
+            if (transactionType == Constants.TransactionType.RO) {
+                System.out.println("Transaction " + transactionId + " begins and is read-only.");
+            } else {
+                System.out.println("Transaction " + transactionId + " begins.");
+            }
+            transactionTable.put(transactionId, transaction);
+        }
+    }
     private void fail(int siteId) {
-        DataManager dataManager = dataManagerList.get(siteId);
+        DataManager dataManager = dataManagerList.get(siteId-1);
         if (dataManager.isUp()) {
             System.out.println("Failing Site:" + siteId);
             dataManager.fail(time);
@@ -263,6 +303,47 @@ public class TransactionManager {
             System.out.println("Site " + siteId + " is down!!");
         }
     }
+
+    private void recover(int siteId) {
+        DataManager dataManager = dataManagerList.get(siteId-1);
+        if (!dataManager.isUp()) {
+            System.out.println("Failing Site:" + siteId);
+            dataManager.recover(time);
+        } else {
+            System.out.println("Site " + siteId + " is already up!");
+        }
+    }
+
+    private void end(String transactionId) {
+        if(!transactionTable.containsKey(transactionId)) {
+            System.out.println("Transaction " + transactionId + " doesn't exist!");
+        } else {
+            if (!transactionTable.get(transactionId).isLive) {
+                abort(transactionId, true);
+            } else {
+                commit(transactionId, time);
+            }
+        }
+    }
+
+    private void commit (String transactionId, int time) {
+        for (DataManager dataManager : dataManagerList) {
+            dataManager.commit(transactionId, time);
+        }
+        transactionTable.remove(transactionId);
+        System.out.println("Transaction " + transactionId + " commited!");
+
+    }
+//    def end(self, transaction_id):
+//            """Commit or abort a transaction depending its status."""
+//            if not self.transaction_table.get(transaction_id):
+//    raise InvalidInstructionError(
+//                "Transaction {} does not exist".format(transaction_id))
+//            if self.transaction_table[transaction_id].will_abort:
+//            self.abort(transaction_id, True)
+//            else:
+//            self.commit(transaction_id, self.ts)
+//
 //    public void processInputFile(String filePath) throws IOException {
 //        int time=1;
 //        BufferedReader reader;
