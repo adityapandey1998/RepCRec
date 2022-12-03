@@ -4,12 +4,12 @@ package Data;
  * This class is used to keep temporary values before being committed.
  * @author Shubham Jha
  */
-public class TempValue {
+public class ProposedValue {
 
   int value;
   String transactionId;
 
-  public TempValue(int value, String transactionId) {
+  public ProposedValue(int value, String transactionId) {
     this.value = value;
     this.transactionId = transactionId;
   }

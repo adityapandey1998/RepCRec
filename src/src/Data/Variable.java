@@ -9,29 +9,29 @@ import java.util.List;
 public class Variable {
 
   public String variableId;
-  public boolean isReplicated;
-  public TempValue tempValue;
   public boolean isReadable;
+  public ProposedValue proposedValue;
+  public boolean isReplicated;
 
   public List<CommitValue> committedValues;
 
   public Variable(String variableId, CommitValue initialValue, boolean isReplicated) {
     this.variableId = variableId;
-    this.committedValues = new ArrayList<>(List.of(initialValue));
-    this.tempValue = null;
-    this.isReplicated = isReplicated;
     this.isReadable = true;
+    this.proposedValue = null;
+    this.isReplicated = isReplicated;
+    this.committedValues = new ArrayList<>(List.of(initialValue));
   }
 
   /**
    * @return Gets the latest committed value
    */
-  public CommitValue getLastCommittedValue() {
+  public CommitValue getMostRecentlyCommittedValue() {
     return this.committedValues.get(0);
   }
 
-  public TempValue getTempValue() {
-    return this.tempValue;
+  public ProposedValue getTempValue() {
+    return this.proposedValue;
   }
 
   /**

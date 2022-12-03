@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static Transactions.Constants.NUM_SITES;
+
 /**
  * Translates Read/Write requests to the DB into requests for the Data Managers at all sites.
  *
@@ -36,8 +38,7 @@ public class TransactionManager {
     transactionMap = new HashMap<>();
     operationQueue = new ArrayDeque<>();
     sites = new ArrayList<>();
-    int siteCount = 10;
-    for (int siteNo = 0; siteNo < siteCount; siteNo++) {
+    for (int siteNo = 0; siteNo < NUM_SITES; siteNo++) {
       sites.add(new DataManager(siteNo + 1));
     }
   }
@@ -109,7 +110,7 @@ public class TransactionManager {
    */
   public void abort(String transactionId, boolean dueToSiteFailure) {
     for (DataManager dataManager : sites) {
-      dataManager.abort(transactionId);
+      dataManager.abortTransaction(transactionId);
       transactionMap.remove(transactionId);
     }
     if (dueToSiteFailure) {
@@ -188,8 +189,8 @@ public class TransactionManager {
           "Transaction " + transactionId + " doesn't exist in the transaction table!");
     } else {
       for (DataManager dataManager : sites) {
-        if (dataManager.isUp() && dataManager.hasVariable(variableId)) {
-          Result result = dataManager.read(transactionId, variableId);
+        if (dataManager.isUp() && dataManager.variableExists(variableId)) {
+          Result result = dataManager.readVariable(transactionId, variableId);
           if (result.isSuccess()) {
             Transaction transaction = transactionMap.get(transactionId);
             transaction.sitesAccessed.add(dataManager.getSiteId());
@@ -217,8 +218,8 @@ public class TransactionManager {
     } else {
       int ts = transactionMap.get(transactionId).getStartTime();
       for (DataManager dataManager : sites) {
-        if (dataManager.isUp() && dataManager.hasVariable(variableId)) {
-          Result result = dataManager.readSnapshot(variableId, ts);
+        if (dataManager.isUp() && dataManager.variableExists(variableId)) {
+          Result result = dataManager.readVariableSnapshot(variableId, ts);
           if (result.isSuccess()) {
             System.out.println(String.format("%s (RO) reads %s.%s: %d".format(
                 transactionId, variableId, dataManager.getSiteId(), result.getValue())));
@@ -244,9 +245,9 @@ public class TransactionManager {
       boolean allSitesDown = true;
       boolean canGetAllLocks = true;
       for (DataManager dataManager : sites) {
-        if (dataManager.isUp() && dataManager.hasVariable(variableId)) {
+        if (dataManager.isUp() && dataManager.variableExists(variableId)) {
           allSitesDown = false;
-          boolean result = dataManager.getWriteLock(transactionId, variableId);
+          boolean result = dataManager.acquireWriteLock(transactionId, variableId);
           if (!result) {
             canGetAllLocks = false;
           }
@@ -255,8 +256,8 @@ public class TransactionManager {
       if ((canGetAllLocks) && !(allSitesDown)) {
         List<Integer> sitesWritten = new ArrayList<>();
         for (DataManager dataManager : sites) {
-          if (dataManager.isUp() && dataManager.hasVariable(variableId)) {
-            dataManager.write(transactionId, variableId, value);
+          if (dataManager.isUp() && dataManager.variableExists(variableId)) {
+            dataManager.writeVariable(transactionId, variableId, value);
 
             Transaction transaction = transactionMap.get(transactionId);
             transaction.sitesAccessed.add(dataManager.getSiteId());
@@ -421,7 +422,7 @@ public class TransactionManager {
    */
   private void commit(String transactionId, int time) {
     for (DataManager dataManager : sites) {
-      dataManager.commit(transactionId, time);
+      dataManager.commitTransaction(transactionId, time);
     }
     transactionMap.remove(transactionId);
     System.out.println("Transaction " + transactionId + " committed!");

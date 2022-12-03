@@ -26,7 +26,7 @@ public class LockManager {
     this.currentLock = currentLock;
   }
 
-  void clear() {
+  void clearLocks() {
     this.currentLock = null;
     this.queue = new ArrayList<>();
   }
@@ -57,7 +57,7 @@ public class LockManager {
    * Add a new lock to the lock queue
    * @param newLock New Queued lock
    */
-  public void addToQueue(QueuedLock newLock) {
+  public void addToLockQueue(QueuedLock newLock) {
     for (QueuedLock queuedLock : this.queue) {
       if (queuedLock.transactionId.equals(newLock.transactionId))
               if (queuedLock.lockType == newLock.lockType
@@ -73,7 +73,7 @@ public class LockManager {
    * @param transactionId Transaction ID
    * @return checking other Queue Lock on given transaction.
    */
-  public boolean hasOtherQueuedWriteLock(String transactionId) {
+  public boolean checkQueuedWriteLocks(String transactionId) {
     for (QueuedLock queuedLock : this.queue) {
       if (queuedLock.lockType == Constants.LockType.WRITE) {
         if (!transactionId.isEmpty() && queuedLock.transactionId.equals(transactionId)) {
@@ -89,7 +89,7 @@ public class LockManager {
    * releasing transaction lock.
    * @param transactionId Transaction ID
    */
-  public void releaseCurrentLockByTransaction(String transactionId) {
+  public void releaseTransactionLock(String transactionId) {
     if (this.currentLock != null) {
       if (this.currentLock.lockType == Constants.LockType.READ) {
         this.currentLock.transactionIds.remove(transactionId);
