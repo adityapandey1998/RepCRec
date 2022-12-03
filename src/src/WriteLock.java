@@ -2,12 +2,12 @@ import Transactions.Constants;
 
 import java.util.Set;
 
-public class ReadLock {
-    final Constants.LockType lockType = Constants.LockType.READ;
+public class WriteLock {
+    final Constants.LockType lockType = Constants.LockType.WRITE;
     final String variableId;
     final Set<String> transactionIds;
 
-    public ReadLock(String variableId, Set<String> transactionIds) {
+    public WriteLock(String variableId, Set<String> transactionIds) {
         this.variableId = variableId;
         this.transactionIds = transactionIds;
     }
