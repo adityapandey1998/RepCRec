@@ -3,6 +3,9 @@ package Transactions;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Transaction Class
+ */
 public class Transaction {
 
   public String transactionId;
@@ -11,6 +14,11 @@ public class Transaction {
   public Constants.TransactionType transactionType;
   public List<Integer> sitesAccessed;
 
+  /**
+   * @param transactionId Transaction ID
+   * @param transactionType Transaction Type - Read-Only/Read-Write
+   * @param startTime Start Time of the Transaction
+   */
   public Transaction(String transactionId, Constants.TransactionType transactionType,
       int startTime) {
     this.transactionId = transactionId;

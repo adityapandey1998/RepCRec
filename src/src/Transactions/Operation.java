@@ -1,30 +1,44 @@
 package Transactions;
 
+/**
+ * Read/Write Operation
+ */
 public class Operation {
 
-  public String command;
+  public Constants.OperationType command;
   public String transactionId;
   public String variableId;
   public int value;
 
-  public Operation(String command, String transactionId, String variableId) {
+  /**
+   * @param command This is a Read Constructor
+   * @param transactionId Transaction ID
+   * @param variableId Variable ID
+   */
+  public Operation(Constants.OperationType command, String transactionId, String variableId) {
     this.command = command;
     this.transactionId = transactionId;
     this.variableId = variableId;
   }
 
-  public Operation(String command, String transactionId, String variableId, int value) {
+  /**
+   * @param command This is a Write Constructor
+   * @param transactionId Transaction ID
+   * @param variableId Variable ID
+   * @param value Value to assign
+   */
+  public Operation(Constants.OperationType command, String transactionId, String variableId, int value) {
     this.command = command;
     this.transactionId = transactionId;
     this.variableId = variableId;
     this.value = value;
   }
 
-  public String getCommand() {
+  public Constants.OperationType getCommand() {
     return command;
   }
 
-  public void setCommand(String command) {
+  public void setCommand(Constants.OperationType command) {
     this.command = command;
   }
 

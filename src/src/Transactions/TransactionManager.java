@@ -1,6 +1,7 @@
 package Transactions;
 
 import Data.Result;
+import Transactions.Constants.OperationType;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -15,25 +16,36 @@ import java.util.Map;
 import java.util.Set;
 
 import Data.DataManager;
+
+/**
+ * Translates Read/Write requests to the DB into requests for the Data Managers at all sites.
+ */
 public class TransactionManager {
 
-  private static Integer siteCount = 10;
-  private List<DataManager> dataManagerList;
-  private Map<String, Transaction> transactionTable;
+  private final List<DataManager> dataManagerList;
+  private final Map<String, Transaction> transactionTable;
   private int time = 0;
 
-  private Deque<Operation> operationQueue;
+  private final Deque<Operation> operationQueue;
 
+  /**
+   * Initialize Class Members and create Data Managers
+   */
   public TransactionManager() {
     transactionTable = new HashMap<>();
     operationQueue = new ArrayDeque<>();
 
     dataManagerList = new ArrayList<>();
+    int siteCount = 10;
     for (int siteNo = 0; siteNo < siteCount; siteNo++) {
       dataManagerList.add(new DataManager(siteNo + 1));
     }
   }
 
+  /**
+   * Identify and handle deadlocks in the Blocking Graph.
+   * @return Boolean value representing the detection of a deadlock.
+   */
   private boolean handleDeadlock() {
     Map<String, Set<String>> blockingGraph = new HashMap<>();
     Map<String, Set<String>> graph;
@@ -68,6 +80,10 @@ public class TransactionManager {
     return false;
   }
 
+  /**
+   * Simple DFS-Based Cycle detection algorithm
+   * @return true if a cycle is found with the given root.
+   */
   private boolean hasCycle(String current, String root, Set<String> visited,
       Map<String, Set<String>> blockingGraph) {
     visited.add(current);
@@ -84,11 +100,16 @@ public class TransactionManager {
     return false;
   }
 
-  public void abort(String transactionId, boolean dueToSite) {
+  /**
+   * Function to abort a given transaction.
+   * @param transactionId ID of the transaction to abort.
+   * @param dueToSiteFailure If the abort is due to a site failed.
+   */
+  public void abort(String transactionId, boolean dueToSiteFailure) {
     for (DataManager dataManager : dataManagerList) {
       dataManager.abort(transactionId);
       transactionTable.remove(transactionId);
-      if (dueToSite) {
+      if (dueToSiteFailure) {
         System.out.println("Aborted " + transactionId + " due to site failure!");
       } else {
         System.out.println("Aborted " + transactionId + " due to deadlock!");
@@ -96,6 +117,11 @@ public class TransactionManager {
     }
   }
 
+  /**
+   * Entry Point to the Transaction Manager running on given Input File
+   * @param filePath Path to input file
+   * @throws IOException Error while reading the file
+   */
   public void processInput(String filePath) throws IOException {
     BufferedReader reader;
     try {
@@ -115,6 +141,9 @@ public class TransactionManager {
     }
   }
 
+  /**
+   * Execute Read/Write Operation
+   */
   private void executeOp() {
     Deque<Operation> operationQueueCopy = new ArrayDeque<>(operationQueue);
     for (Operation operation : operationQueueCopy) {
@@ -122,14 +151,14 @@ public class TransactionManager {
         operationQueue.remove(operation);
       } else {
         boolean opSuccess = false;
-        if (operation.getCommand().equals("R")) {
+        if (operation.getCommand() == OperationType.READ) {
           if (transactionTable.get(operation.getTransactionId()).getTransactionType()
               == Constants.TransactionType.RO) {
             opSuccess = readOnlyOp(operation.getTransactionId(), operation.getVariableId());
           } else {
             opSuccess = readOp(operation.getTransactionId(), operation.getVariableId());
           }
-        } else if (operation.getCommand().equals("W")) {
+        } else if (operation.getCommand() == OperationType.WRITE) {
           opSuccess = writeOp(operation.getTransactionId(), operation.getVariableId(),
               operation.getValue());
         } else {
@@ -142,6 +171,11 @@ public class TransactionManager {
     }
   }
 
+  /**
+   * @param transactionId Transaction corresponding to Read Operation
+   * @param variableId Variable corresponding to Read Operation
+   * @return Success of General Read Operation
+   */
   private boolean readOp(String transactionId, String variableId) {
     if (!transactionTable.containsKey(transactionId)) {
       System.out.println(
@@ -165,6 +199,11 @@ public class TransactionManager {
     return false;
   }
 
+  /**
+   * @param transactionId Transaction corresponding to Read-Only Read Operation
+   * @param variableId Variable corresponding to Read-Only Read Operation
+   * @return Success of Read-Only Read Operation
+   */
   private boolean readOnlyOp(String transactionId, String variableId) {
     if (!transactionTable.containsKey(transactionId)) {
       System.out.println(
@@ -185,6 +224,12 @@ public class TransactionManager {
     return false;
   }
 
+  /**
+   * @param transactionId Transaction corresponding to Write Operation
+   * @param variableId Variable corresponding to Write Operation
+   * @param value Value to be written
+   * @return Success of Write Operation
+   */
   private boolean writeOp(String transactionId, String variableId, int value) {
     if (!transactionTable.containsKey(transactionId)) {
       System.out.println(
@@ -222,12 +267,20 @@ public class TransactionManager {
     return false;
   }
 
+  /**
+   * Function to trigger the output for each DataManager/Site.
+   */
   private void dump() {
     for (DataManager dataManager : dataManagerList) {
       dataManager.dump();
     }
   }
 
+  /**
+   * Identify the Operation, get the operands and pass the parameters to the corresponding
+   * functions.
+   * @param line Input Line containing the commands
+   */
   private void executeInput(String line) {
     if (line.startsWith("dump")) {
       System.out.println("Dump:");
@@ -255,7 +308,7 @@ public class TransactionManager {
       if (!transactionTable.containsKey(transactionId)) {
         System.out.println("Transaction " + transactionId + " doesn't exists!");
       } else {
-        operationQueue.add(new Operation("R", transactionId, variableName));
+        operationQueue.add(new Operation(OperationType.READ, transactionId, variableName));
       }
     } else if (line.startsWith("W")) {
       String inputLine = line.substring(2, line.length() - 1);
@@ -267,7 +320,7 @@ public class TransactionManager {
       if (!transactionTable.containsKey(transactionId)) {
         System.out.println("Transaction " + transactionId + " doesn't exists!");
       } else {
-        operationQueue.add(new Operation("R", transactionId, variableName, value));
+        operationQueue.add(new Operation(OperationType.WRITE, transactionId, variableName, value));
       }
     } else {
       System.out.println("Invalid Operation");
@@ -275,6 +328,11 @@ public class TransactionManager {
 
   }
 
+  /**
+   * @param transactionId ID of the new Transaction
+   * @param transactionType Type of the new Transaction
+   * @param time Start time of the new Transaction
+   */
   private void beginTransaction(String transactionId, Constants.TransactionType transactionType,
       int time) {
     if (transactionTable.containsKey(transactionId)) {
@@ -290,6 +348,10 @@ public class TransactionManager {
     }
   }
 
+  /**
+   * Function to trigger failure of given site.
+   * @param siteId ID of the site to fail.
+   */
   private void fail(int siteId) {
     DataManager dataManager = dataManagerList.get(siteId - 1);
     if (dataManager.isUp()) {
@@ -309,6 +371,10 @@ public class TransactionManager {
     }
   }
 
+  /**
+   * Function to trigger recovery of given site.
+   * @param siteId ID of the site to recover.
+   */
   private void recover(int siteId) {
     DataManager dataManager = dataManagerList.get(siteId - 1);
     if (!dataManager.isUp()) {
@@ -319,6 +385,10 @@ public class TransactionManager {
     }
   }
 
+  /**
+   * Function to trigger end of given transaction.
+   * @param transactionId ID of the transaction to end.
+   */
   private void end(String transactionId) {
     if (!transactionTable.containsKey(transactionId)) {
       System.out.println("Transaction " + transactionId + " doesn't exist!");
@@ -331,6 +401,11 @@ public class TransactionManager {
     }
   }
 
+  /**
+   * Function to commit given transaction.
+   * @param transactionId ID of the transaction to commit.
+   * @param time commit time.
+   */
   private void commit(String transactionId, int time) {
     for (DataManager dataManager : dataManagerList) {
       dataManager.commit(transactionId, time);
