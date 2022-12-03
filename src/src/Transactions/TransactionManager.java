@@ -60,6 +60,7 @@ public class TransactionManager {
         });
       }
     }
+    System.out.println(blockingGraph);
     String youngestTransId = null;
     int youngestTransTime = -1;
 
@@ -194,8 +195,8 @@ public class TransactionManager {
             Transaction transaction = transactionMap.get(transactionId);
             transaction.sitesAccessed.add(dataManager.getSiteId());
             transactionMap.put(transactionId, transaction);
-            System.out.println(String.format("%s reads %s.%s: %d".format(
-                transactionId, variableId, dataManager.getSiteId(), result.getValue())));
+            System.out.println(String.format("%s reads %s.%s: %d",
+                transactionId, variableId, dataManager.getSiteId(), result.getValue()));
             return true;
           }
 
