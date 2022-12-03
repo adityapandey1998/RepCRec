@@ -53,6 +53,7 @@ public class TransactionManager {
     for (DataManager dataManager : sites) {
       if (dataManager.isUp()) {
         graph = dataManager.generateBlockingGraph();
+//        System.out.println(graph);
         graph.forEach((node, adjList) -> {
           Set<String> tempSet = blockingGraph.getOrDefault(node, new HashSet<>());
           tempSet.addAll(adjList);
@@ -60,7 +61,7 @@ public class TransactionManager {
         });
       }
     }
-
+    System.out.println(blockingGraph);
     String youngestTransId = null;
     int youngestTransTime = -1;
 
@@ -138,11 +139,12 @@ public class TransactionManager {
     while ((line = reader.readLine()) != null) {
       if (line.startsWith("//"))
         continue;
+      System.out.println("----- Timestamp: " + currentTime + " -----");
       if (checkAndHandleDeadlock()) {
-        executeOp();
+        executeOpQueue();
       }
       executeOperation(line);
-      executeOp();
+      executeOpQueue();
       currentTime += 1;
     }
   }
@@ -150,7 +152,7 @@ public class TransactionManager {
   /**
    * Execute Read/Write Operation
    */
-  private void executeOp() {
+  private void executeOpQueue() {
     Deque<Operation> operationQueueCopy = new ArrayDeque<>(operationQueue);
     for (Operation operation : operationQueueCopy) {
       if (!transactionMap.containsKey(operation.getTransactionId())) {
@@ -289,6 +291,7 @@ public class TransactionManager {
    * @param line Input Line containing the commands
    */
   private void executeOperation(String line) {
+//    System.out.println("TimeStamp: "+currentTime+"--------");
     if (line.startsWith("dump")) {
       System.out.println("Dump:");
       dump();

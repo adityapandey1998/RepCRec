@@ -101,6 +101,7 @@ public class DataManager {
         lockManager.addToQueue(new QueuedLock(variableId, Constants.LockType.READ, transactionId));
         return new Result(false);
       }
+//      System.out.println("Set Lock 1");
       lockManager.setCurrentLock(new ReadLock(variableId, transactionId));
       return new Result(true, var.getLastCommittedValue().getValue());
     }
@@ -151,13 +152,17 @@ public class DataManager {
               var.tempValue = new TempValue(value, transactionId);
               return;
             }
+            return;
           }
+        } else {
+          return;
         }
       }
       if (transactionId.equals(currentLock.transactionId)) {
         var.tempValue = new TempValue(value, transactionId);
         return;
       }
+      return;
     }
     lockManager.setCurrentLock(new WriteLock(variableId, transactionId));
     var.tempValue = new TempValue(value, transactionId);
@@ -257,9 +262,7 @@ public class DataManager {
 
   boolean currentBlocksQueued(Lock currentLock, Lock queuedLock) {
     if (currentLock.lockType == Constants.LockType.READ) {
-      if (queuedLock.lockType == Constants.LockType.READ ||
-          (currentLock.transactionIds.size() == 1 && currentLock.transactionIds.contains(
-              queuedLock.transactionId))
+      if (queuedLock.lockType == Constants.LockType.READ || (currentLock.transactionIds.size() == 1 && currentLock.transactionIds.contains(queuedLock.transactionId))
       ) {
         return false;
       }

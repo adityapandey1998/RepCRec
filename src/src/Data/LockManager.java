@@ -31,6 +31,7 @@ public class LockManager {
         this.currentLock.transactionIds.size() == 1 &&
         this.currentLock.transactionIds.contains(writeLock.transactionId)
     ) {
+      System.out.println("Set Lock 5");
       setCurrentLock(writeLock);
     }
   }
