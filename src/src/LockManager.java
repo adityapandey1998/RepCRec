@@ -8,10 +8,10 @@ public class LockManager {
     Lock currentLock;
     List<QueuedLock> queue;
 
-    public LockManager(String variableId, Lock currentLock, List<QueuedLock> queue) {
+    public LockManager(String variableId) {
         this.variableId = variableId;
-        this.currentLock = currentLock;
-        this.queue = queue;
+        this.currentLock = null;
+        this.queue = new ArrayList<>();
     }
 
     public void setCurrentLock(Lock currentLock) {

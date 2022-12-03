@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,9 +9,9 @@ public class Variable {
     Integer tempValue;
     boolean isReadable;
 
-    List<Integer> committedValues;
+    List<CommitValue> committedValues;
 
-    Variable(String variableIdx, int initialValue, boolean isReplicated) {
+    Variable(String variableIdx, CommitValue initialValue, boolean isReplicated) {
         this.variableIdx = variableIdx;
         this.committedValues = new ArrayList<>(List.of(initialValue));
         this.tempValue = null;
@@ -18,7 +19,7 @@ public class Variable {
         this.isReadable = true;
     }
 
-    Integer getLastCommittedValue() {
+    CommitValue getLastCommittedValue() {
         return this.committedValues.get(0);
     }
 
@@ -26,7 +27,7 @@ public class Variable {
         return this.tempValue;
     }
 
-    void addCommitValue(int commitValue) {
+    void addCommitValue(CommitValue commitValue) {
         this.committedValues.add(commitValue);
     }
 }
