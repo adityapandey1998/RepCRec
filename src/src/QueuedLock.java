@@ -3,17 +3,19 @@ import Transactions.Constants;
 import java.util.Set;
 
 public class QueuedLock extends Lock {
-    public QueuedLock(String variableId, Constants.LockType lockType, Set<String> transactionIds) {
+    String transactionId;
+
+    public QueuedLock(String variableId, Constants.LockType lockType, String transactionId) {
         this.variableId = variableId;
         this.lockType = lockType;
-        this.transactionIds = transactionIds;
+        this.transactionId = transactionId;
     }
 
     public String getVariableId() {
         return variableId;
     }
 
-    public Set<String> getTransactionIds() {
-        return transactionIds;
+    public String getTransactionId() {
+        return transactionId;
     }
 }

@@ -2,7 +2,7 @@ import Transactions.Constants;
 
 import java.util.Set;
 
-public class ReadLock extends Lock{
+public class ReadLock extends Lock {
     final Constants.LockType lockType = Constants.LockType.READ;
 
     public ReadLock(String variableId, Set<String> transactionIds) {
@@ -17,4 +17,5 @@ public class ReadLock extends Lock{
     public Set<String> getTransactionIds() {
         return transactionIds;
     }
+
 }

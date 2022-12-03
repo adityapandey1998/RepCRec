@@ -1,20 +1,18 @@
 import Transactions.Constants;
 
-import java.util.Set;
-
-public class WriteLock extends Lock{
+public class WriteLock extends Lock {
     final Constants.LockType lockType = Constants.LockType.WRITE;
 
-    public WriteLock(String variableId, Set<String> transactionIds) {
+    public WriteLock(String variableId, String transactionId) {
         this.variableId = variableId;
-        this.transactionIds = transactionIds;
+        this.transactionId = transactionId;
     }
 
     public String getVariableId() {
         return variableId;
     }
 
-    public Set<String> getTransactionIds() {
-        return transactionIds;
+    public String getTransactionId() {
+        return transactionId;
     }
 }
