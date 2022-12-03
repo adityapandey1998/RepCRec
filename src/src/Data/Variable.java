@@ -5,15 +5,15 @@ import java.util.List;
 
 public class Variable {
 
-  String variableIdx;
+  public String variableId;
   public boolean isReplicated;
   public TempValue tempValue;
   public boolean isReadable;
 
   public List<CommitValue> committedValues;
 
-  public Variable(String variableIdx, CommitValue initialValue, boolean isReplicated) {
-    this.variableIdx = variableIdx;
+  public Variable(String variableId, CommitValue initialValue, boolean isReplicated) {
+    this.variableId = variableId;
     this.committedValues = new ArrayList<>(List.of(initialValue));
     this.tempValue = null;
     this.isReplicated = isReplicated;
