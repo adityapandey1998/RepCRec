@@ -1,3 +1,5 @@
+package Data;
+
 import Transactions.Constants;
 
 public class WriteLock extends Lock {

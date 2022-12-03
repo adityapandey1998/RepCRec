@@ -1,3 +1,5 @@
+package Data;
+
 public class TempValue {
 
   int value;

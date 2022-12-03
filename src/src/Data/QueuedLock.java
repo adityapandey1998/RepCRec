@@ -1,6 +1,6 @@
-import Transactions.Constants;
+package Data;
 
-import java.util.Set;
+import Transactions.Constants;
 
 public class QueuedLock extends Lock {
 

@@ -1,3 +1,5 @@
+package Data;
+
 import Transactions.Transaction;
 
 import java.util.ArrayList;
@@ -9,12 +11,62 @@ public class DataManager {
 
   int siteId;
   boolean isUp;
+
+  public int getSiteId() {
+    return siteId;
+  }
+
+  public void setSiteId(int siteId) {
+    this.siteId = siteId;
+  }
+
+  public boolean isUp() {
+    return isUp;
+  }
+
+  public void setUp(boolean up) {
+    isUp = up;
+  }
+
+  public Map<String, Variable> getData() {
+    return data;
+  }
+
+  public void setData(Map<String, Variable> data) {
+    this.data = data;
+  }
+
+  public Map<String, LockManager> getLockTable() {
+    return lockTable;
+  }
+
+  public void setLockTable(Map<String, LockManager> lockTable) {
+    this.lockTable = lockTable;
+  }
+
+  public List<Integer> getFailedTimestampList() {
+    return failedTimestampList;
+  }
+
+  public void setFailedTimestampList(List<Integer> failedTimestampList) {
+    this.failedTimestampList = failedTimestampList;
+  }
+
+  public List<Transaction> getRecoveredTransactionList() {
+    return recoveredTransactionList;
+  }
+
+  public void setRecoveredTransactionList(
+      List<Transaction> recoveredTransactionList) {
+    this.recoveredTransactionList = recoveredTransactionList;
+  }
+
   Map<String, Variable> data;
   Map<String, LockManager> lockTable;
   List<Integer> failedTimestampList;
   List<Transaction> recoveredTransactionList;
 
-  DataManager(int siteId) {
+  public DataManager(int siteId) {
     this.siteId = siteId;
     this.isUp = true;
     this.data = new HashMap<>();
@@ -36,11 +88,11 @@ public class DataManager {
     }
   }
 
-  boolean hasVariable(String variableId) {
+  public boolean hasVariable(String variableId) {
     return this.data.containsKey(variableId);
   }
 
-  Result readSnapshot(String variableId, int timestamp) {
+  public Result readSnapshot(String variableId, int timestamp) {
     Variable var = this.data.get(variableId);
     if (var.isReadable) {
       for (CommitValue commitValue : var.committedValues) {
@@ -60,7 +112,7 @@ public class DataManager {
     return new Result(false);
   }
 
-  Result read(String transactionId, String variableId) {
+  public Result read(String transactionId, String variableId) {
     Variable var = this.data.get(variableId);
   }
 }

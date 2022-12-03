@@ -1,3 +1,5 @@
+package Data;
+
 public class CommitValue {
 
   private int value;
