@@ -280,7 +280,8 @@ public class DataManager {
     HashMap<String, HashSet<String>> graph = new HashMap<>();
     for (Map.Entry<String, LockManager> entry : this.lockTable.entrySet()) {
       LockManager lockManager = entry.getValue();
-      if (lockManager.currentLock == null || lockManager.queue == null) {
+
+      if (lockManager.currentLock == null || lockManager.queue == null || lockManager.queue.isEmpty()) {
         continue;
       }
 
