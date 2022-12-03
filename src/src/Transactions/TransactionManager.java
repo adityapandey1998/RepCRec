@@ -90,7 +90,7 @@ public class TransactionManager {
   private boolean hasCycle(String current, String root, Set<String> visited,
       Map<String, Set<String>> blockingGraph) {
     visited.add(current);
-    for (String neighbour : blockingGraph.get(current)) {
+    for (String neighbour : blockingGraph.getOrDefault(current, new HashSet<>())) {
       if (neighbour.equals(root)) {
         return true;
       }
@@ -243,7 +243,8 @@ public class TransactionManager {
       System.out.println(
           "Transaction " + transactionId + " doesn't exist in the transaction table!");
     } else {
-      boolean allSitesDown = true, canGetAllLocks = true;
+      boolean allSitesDown = true;
+      boolean canGetAllLocks = true;
       for (DataManager dataManager : sites) {
         if (dataManager.isUp() && dataManager.hasVariable(variableId)) {
           allSitesDown = false;
@@ -253,7 +254,7 @@ public class TransactionManager {
           }
         }
       }
-      if (!(canGetAllLocks && allSitesDown)) {
+      if ((canGetAllLocks) && !(allSitesDown)) {
         List<Integer> sitesWritten = new ArrayList<>();
         for (DataManager dataManager : sites) {
           if (dataManager.isUp() && dataManager.hasVariable(variableId)) {

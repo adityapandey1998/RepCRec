@@ -182,7 +182,8 @@ public class DataManager {
   public void abort(String transactionId) {
     for(LockManager lockManager : this.lockTable.values()) {
       lockManager.releaseCurrentLockByTransaction(transactionId);
-      for(QueuedLock queuedLock : lockManager.queue) {
+      List<QueuedLock> tempQ = new ArrayList<>(lockManager.queue);
+      for(QueuedLock queuedLock : tempQ) {
         if(queuedLock.transactionId.equals(transactionId)) {
           lockManager.queue.remove(queuedLock);
         }
