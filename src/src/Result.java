@@ -1,30 +1,31 @@
 public class Result {
-    boolean success;
-    int value;
 
-    public Result(boolean success) {
-        this.success = success;
-        this.value = 0;
-    }
+  boolean success;
+  int value;
 
-    public Result(boolean success, int value) {
-        this.success = success;
-        this.value = value;
-    }
+  public Result(boolean success) {
+    this.success = success;
+    this.value = 0;
+  }
 
-    public boolean isSuccess() {
-        return success;
-    }
+  public Result(boolean success, int value) {
+    this.success = success;
+    this.value = value;
+  }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
+  public boolean isSuccess() {
+    return success;
+  }
 
-    public int getValue() {
-        return value;
-    }
+  public void setSuccess(boolean success) {
+    this.success = success;
+  }
 
-    public void setValue(int value) {
-        this.value = value;
-    }
+  public int getValue() {
+    return value;
+  }
+
+  public void setValue(int value) {
+    this.value = value;
+  }
 }

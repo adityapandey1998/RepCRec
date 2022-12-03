@@ -1,25 +1,26 @@
 public class TempValue {
-    int value;
-    String transactionId;
 
-    public TempValue(int value, String transactionId) {
-        this.value = value;
-        this.transactionId = transactionId;
-    }
+  int value;
+  String transactionId;
 
-    public int getValue() {
-        return value;
-    }
+  public TempValue(int value, String transactionId) {
+    this.value = value;
+    this.transactionId = transactionId;
+  }
 
-    public void setValue(int value) {
-        this.value = value;
-    }
+  public int getValue() {
+    return value;
+  }
 
-    public String getTransactionId() {
-        return transactionId;
-    }
+  public void setValue(int value) {
+    this.value = value;
+  }
 
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
-    }
+  public String getTransactionId() {
+    return transactionId;
+  }
+
+  public void setTransactionId(String transactionId) {
+    this.transactionId = transactionId;
+  }
 }

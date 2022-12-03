@@ -6,59 +6,61 @@ import java.util.List;
 import java.util.Map;
 
 public class DataManager {
-    int siteId;
-    boolean isUp;
-    Map<String, Variable> data;
-    Map<String, LockManager> lockTable;
-    List<Integer> failedTimestampList;
-    List<Transaction> recoveredTransactionList;
 
-    DataManager(int siteId) {
-        this.siteId = siteId;
-        this.isUp = true;
-        this.data = new HashMap<>();
-        this.lockTable = new HashMap<>();
-        this.failedTimestampList = new ArrayList<>();
-        this.recoveredTransactionList = new ArrayList<>();
+  int siteId;
+  boolean isUp;
+  Map<String, Variable> data;
+  Map<String, LockManager> lockTable;
+  List<Integer> failedTimestampList;
+  List<Transaction> recoveredTransactionList;
 
-        for(int varIdx = 1; varIdx <= 20; varIdx++) {
-            String varId = "x" + varIdx;
-            if(varIdx % 2 == 0) {
-                // replicate on all sites
-                this.data.put(varId, new Variable(varId,
-                                new CommitValue(varIdx * 10, 0), true));
-                this.lockTable.put(varId, new LockManager(varId));
-            } else if (varIdx % 10 + 1 == this.siteId) {
-                this.data.put(varId, new Variable(varId, new CommitValue(varIdx * 10, 0), false));
-                this.lockTable.put(varId, new LockManager(varId));
+  DataManager(int siteId) {
+    this.siteId = siteId;
+    this.isUp = true;
+    this.data = new HashMap<>();
+    this.lockTable = new HashMap<>();
+    this.failedTimestampList = new ArrayList<>();
+    this.recoveredTransactionList = new ArrayList<>();
+
+    for (int varIdx = 1; varIdx <= 20; varIdx++) {
+      String varId = "x" + varIdx;
+      if (varIdx % 2 == 0) {
+        // replicate on all sites
+        this.data.put(varId, new Variable(varId,
+            new CommitValue(varIdx * 10, 0), true));
+        this.lockTable.put(varId, new LockManager(varId));
+      } else if (varIdx % 10 + 1 == this.siteId) {
+        this.data.put(varId, new Variable(varId, new CommitValue(varIdx * 10, 0), false));
+        this.lockTable.put(varId, new LockManager(varId));
+      }
+    }
+  }
+
+  boolean hasVariable(String variableId) {
+    return this.data.containsKey(variableId);
+  }
+
+  Result readSnapshot(String variableId, int timestamp) {
+    Variable var = this.data.get(variableId);
+    if (var.isReadable) {
+      for (CommitValue commitValue : var.committedValues) {
+        if (commitValue.getCommitTimestamp() <= timestamp) {
+          if (var.isReplicated) {
+            for (int failedTimestamp : this.failedTimestampList) {
+              if (commitValue.getCommitTimestamp() < failedTimestamp
+                  && failedTimestamp <= timestamp) {
+                return new Result(false);
+              }
             }
+          }
+          return new Result(true, commitValue.getValue());
         }
+      }
     }
+    return new Result(false);
+  }
 
-    boolean hasVariable(String variableId) {
-        return this.data.containsKey(variableId);
-    }
-
-    Result readSnapshot(String variableId, int timestamp) {
-        Variable var = this.data.get(variableId);
-        if(var.isReadable) {
-            for (CommitValue commitValue : var.committedValues) {
-                if(commitValue.getCommitTimestamp() <= timestamp) {
-                    if(var.isReplicated) {
-                        for(int failedTimestamp : this.failedTimestampList) {
-                            if(commitValue.getCommitTimestamp() < failedTimestamp && failedTimestamp <= timestamp) {
-                                return new Result(false);
-                            }
-                        }
-                    }
-                    return new Result(true, commitValue.getValue());
-                }
-            }
-        }
-        return new Result(false);
-    }
-
-    Result read(String transactionId, String variableId) {
-        Variable var = this.data.get(variableId);
-    }
+  Result read(String transactionId, String variableId) {
+    Variable var = this.data.get(variableId);
+  }
 }

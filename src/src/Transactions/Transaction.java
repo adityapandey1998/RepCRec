@@ -5,70 +5,70 @@ import java.util.List;
 
 public class Transaction {
 
-    public String transactionId;
-    public Boolean isLive;
-    public int startTime;
+  public String transactionId;
+  public Boolean isLive;
+  public int startTime;
+  public Constants.TransactionType transactionType;
+  public List<Integer> sitesAccessed;
 
-    public String getTransactionId() {
-        return transactionId;
-    }
+  public Transaction(String transactionId, Constants.TransactionType transactionType,
+      int startTime) {
+    this.transactionId = transactionId;
+    this.isLive = true;
+    this.transactionType = transactionType;
+    this.startTime = startTime;
+    this.sitesAccessed = new ArrayList<>();
+  }
 
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
-    }
+  public String getTransactionId() {
+    return transactionId;
+  }
 
-    public Boolean getLive() {
-        return isLive;
-    }
+  public void setTransactionId(String transactionId) {
+    this.transactionId = transactionId;
+  }
 
-    public void setLive(Boolean live) {
-        isLive = live;
-    }
+  public Boolean getLive() {
+    return isLive;
+  }
 
-    public int getStartTime() {
-        return startTime;
-    }
+  public void setLive(Boolean live) {
+    isLive = live;
+  }
 
-    public void setStartTime(int startTime) {
-        this.startTime = startTime;
-    }
+  public int getStartTime() {
+    return startTime;
+  }
 
-    public Constants.TransactionType getTransactionType() {
-        return transactionType;
-    }
+  public void setStartTime(int startTime) {
+    this.startTime = startTime;
+  }
 
-    public void setTransactionType(Constants.TransactionType transactionType) {
-        this.transactionType = transactionType;
-    }
+  public Constants.TransactionType getTransactionType() {
+    return transactionType;
+  }
 
-    public List<Integer> getSitesAccessed() {
-        return sitesAccessed;
-    }
+  public void setTransactionType(Constants.TransactionType transactionType) {
+    this.transactionType = transactionType;
+  }
 
-    public void setSitesAccessed(List<Integer> sitesAccessed) {
-        this.sitesAccessed = sitesAccessed;
-    }
+  public List<Integer> getSitesAccessed() {
+    return sitesAccessed;
+  }
 
-    @Override
-    public String toString() {
-        return "Transaction{" +
-                "transactionId='" + transactionId + '\'' +
-                ", isLive=" + isLive +
-                ", startTime=" + startTime +
-                ", transactionType=" + transactionType +
-                ", sitesAccessed=" + sitesAccessed +
-                '}';
-    }
+  public void setSitesAccessed(List<Integer> sitesAccessed) {
+    this.sitesAccessed = sitesAccessed;
+  }
 
-    public Constants.TransactionType transactionType;
-    public List<Integer> sitesAccessed;
-
-    public Transaction(String transactionId, Constants.TransactionType transactionType, int startTime) {
-        this.transactionId = transactionId;
-        this.isLive = true;
-        this.transactionType = transactionType;
-        this.startTime = startTime;
-        this.sitesAccessed = new ArrayList<>();
-    }
+  @Override
+  public String toString() {
+    return "Transaction{" +
+        "transactionId='" + transactionId + '\'' +
+        ", isLive=" + isLive +
+        ", startTime=" + startTime +
+        ", transactionType=" + transactionType +
+        ", sitesAccessed=" + sitesAccessed +
+        '}';
+  }
 
 }
