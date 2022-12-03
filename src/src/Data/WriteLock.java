@@ -2,9 +2,18 @@ package Data;
 
 import Transactions.Constants;
 
+/**
+ * WriteLock Class
+ * @author Shubham Jha
+ */
 public class WriteLock extends Lock {
 
 
+  /**
+   * Write Lock Constructor
+   * @param variableId variable ID
+   * @param transactionId transaction ID
+   */
   public WriteLock(String variableId, String transactionId) {
     this.variableId = variableId;
     this.transactionId = transactionId;

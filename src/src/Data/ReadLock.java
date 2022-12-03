@@ -4,6 +4,10 @@ import Transactions.Constants;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * ReadLock Class
+ * @author Shubham Jha
+ */
 public class ReadLock extends Lock {
 
   public ReadLock(String variableId, String transactionId) {

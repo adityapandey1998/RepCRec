@@ -19,6 +19,8 @@ import java.util.TreeSet;
 
 /**
  * Translates Read/Write requests to the DB into requests for the Data Managers at all sites.
+ *
+ * @author Aditya Pandey
  */
 public class TransactionManager {
 

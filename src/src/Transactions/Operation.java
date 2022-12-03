@@ -1,7 +1,8 @@
 package Transactions;
 
 /**
- * Read/Write Operation
+ * Read/Write Operation Class
+ * @author Aditya Pandey
  */
 public class Operation {
 

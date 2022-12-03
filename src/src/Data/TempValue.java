@@ -1,5 +1,9 @@
 package Data;
 
+/**
+ * This class is used to keep temporary values before being committed.
+ * @author Shubham Jha
+ */
 public class TempValue {
 
   int value;

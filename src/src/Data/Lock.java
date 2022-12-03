@@ -3,6 +3,9 @@ package Data;
 import Transactions.Constants;
 import java.util.Set;
 
+/**
+ * @author Shubham Jha
+ */
 public abstract class Lock {
 
   public Set<String> transactionIds;

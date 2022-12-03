@@ -1,5 +1,8 @@
 package Data;
 
+/**
+ * Result class is used to communicate with the TransactionManager on Operations
+ */
 public class Result {
 
   boolean success;

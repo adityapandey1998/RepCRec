@@ -1,5 +1,9 @@
 package Transactions;
 
+/**
+ * Constants
+ * @author Aditya Pandey, Shubham Jha
+ */
 public class Constants {
 
   public final static int NUM_SITES = 10;

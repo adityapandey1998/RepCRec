@@ -4,6 +4,12 @@ import Transactions.Constants;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Lock Manager handles all the setting, promoting, sharing and releasing of transaction and
+ * variable locks.
+ * @author Shubham Jha
+ */
 public class LockManager {
 
   public Lock currentLock;
@@ -25,6 +31,9 @@ public class LockManager {
     this.queue = new ArrayList<>();
   }
 
+  /**
+   * @param writeLock writeLock to set as current
+   */
   public void promoteCurrentLock(WriteLock writeLock) {
     if (this.currentLock != null &&
         this.currentLock.lockType == Constants.LockType.READ &&
@@ -35,12 +44,19 @@ public class LockManager {
     }
   }
 
+  /**
+   * @param transactionId Transaction ID
+   */
   public void shareReadLock(String transactionId) {
     if (currentLock.lockType == Constants.LockType.READ) {
       this.currentLock.transactionIds.add(transactionId);
     }
   }
 
+  /**
+   * Add a new lock to the lock queue
+   * @param newLock New Queued lock
+   */
   public void addToQueue(QueuedLock newLock) {
     for (QueuedLock queuedLock : this.queue) {
       if (queuedLock.transactionId.equals(newLock.transactionId))
@@ -53,6 +69,10 @@ public class LockManager {
     this.queue.add(newLock);
   }
 
+  /**
+   * @param transactionId Transaction ID
+   * @return checking other Queue Lock on given transaction.
+   */
   public boolean hasOtherQueuedWriteLock(String transactionId) {
     for (QueuedLock queuedLock : this.queue) {
       if (queuedLock.lockType == Constants.LockType.WRITE) {
@@ -65,6 +85,10 @@ public class LockManager {
     return false;
   }
 
+  /**
+   * releasing transaction lock.
+   * @param transactionId Transaction ID
+   */
   public void releaseCurrentLockByTransaction(String transactionId) {
     if (this.currentLock != null) {
       if (this.currentLock.lockType == Constants.LockType.READ) {

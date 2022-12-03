@@ -3,6 +3,9 @@ package Data;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Variable Class holds the values of different versions of the dame variable.
+ */
 public class Variable {
 
   public String variableId;
@@ -20,6 +23,9 @@ public class Variable {
     this.isReadable = true;
   }
 
+  /**
+   * @return Gets the latest committed value
+   */
   public CommitValue getLastCommittedValue() {
     return this.committedValues.get(0);
   }
@@ -28,6 +34,9 @@ public class Variable {
     return this.tempValue;
   }
 
+  /**
+   * Adds the latest value to the front of the list
+   */
   public void addCommitValue(CommitValue commitValue) {
     this.committedValues.add(0, commitValue);
   }

@@ -5,6 +5,7 @@ import java.util.List;
 
 /**
  * Transaction Class
+ * @author Aditya Pandey
  */
 public class Transaction {
 
