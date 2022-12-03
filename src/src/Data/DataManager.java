@@ -12,7 +12,7 @@ public class DataManager {
   List<Integer> failedTimestampList;
   List<Integer> recoveredTimestampList;
 
-  DataManager(int siteId) {
+  public DataManager(int siteId) {
     this.siteId = siteId;
     this.isUp = true;
     this.data = new HashMap<>();
@@ -34,11 +34,11 @@ public class DataManager {
     }
   }
 
-  boolean hasVariable(String variableId) {
+  public boolean hasVariable(String variableId) {
     return this.data.containsKey(variableId);
   }
 
-  Result readSnapshot(String variableId, int timestamp) {
+  public Result readSnapshot(String variableId, int timestamp) {
     Variable var = this.data.get(variableId);
     if(var.isReadable) {
       for (CommitValue commitValue : var.committedValues) {
@@ -57,7 +57,7 @@ public class DataManager {
     return new Result(false);
   }
 
-  Result read(String transactionId, String variableId) {
+  public Result read(String transactionId, String variableId) {
     Variable var = this.data.get(variableId);
     if(var.isReadable) {
       LockManager lockManager = lockTable.get(variableId);
@@ -86,7 +86,7 @@ public class DataManager {
     return new Result(false);
   }
 
-  boolean getWriteLock(String transactionId, String variableId) {
+  public boolean getWriteLock(String transactionId, String variableId) {
     LockManager lockManager = this.lockTable.get(variableId);
     Lock currentLock = lockManager.currentLock;
     if(currentLock != null) {
@@ -114,7 +114,7 @@ public class DataManager {
     return true;
   }
 
-  void write(String transactionId, String variableId, int value) {
+  public void write(String transactionId, String variableId, int value) {
     Variable var = this.data.get(variableId);
     LockManager lockManager = this.lockTable.get(variableId);
     Lock currentLock = lockManager.currentLock;
@@ -140,7 +140,7 @@ public class DataManager {
     var.tempValue = new TempValue(value, transactionId);
   }
 
-  void dump() {
+  public void dump() {
     String siteStatus = this.isUp ? "UP" : "DOWN";
     StringBuilder output = new StringBuilder(String.format("Site %d [%s] - ", this.siteId, siteStatus));
     for(Variable v : this.data.values()) {
@@ -150,7 +150,7 @@ public class DataManager {
     System.out.println(output);
   }
 
-  void commit(String transactionId, int commitTimestamp) {
+  public void commit(String transactionId, int commitTimestamp) {
     for(LockManager lockManager : this.lockTable.values()) {
       lockManager.releaseCurrentLockByTransaction(transactionId);
     }
@@ -163,7 +163,7 @@ public class DataManager {
     resolveLockTable();
   }
 
-  void resolveLockTable() {
+  public void resolveLockTable() {
     for (Map.Entry<String,LockManager> entry : this.lockTable.entrySet()) {
       String variableId = entry.getKey();
       LockManager lockManager = entry.getValue();
@@ -198,7 +198,7 @@ public class DataManager {
     }
   }
 
-  void fail(int timestamp) {
+  public void fail(int timestamp) {
     this.isUp = false;
     this.failedTimestampList.add(timestamp);
     for(LockManager lockManager : this.lockTable.values()) {
@@ -206,7 +206,7 @@ public class DataManager {
     }
   }
 
-  void recover(int timestamp) {
+  public void recover(int timestamp) {
     this.isUp = true;
     this.recoveredTimestampList.add(timestamp);
     for(Variable var : this.data.values()) {
@@ -235,7 +235,7 @@ public class DataManager {
     return !queuedLockLeft.transactionId.equals(queuedLockRight.transactionId);
   }
 
-  Map<String, HashSet<String>> generateBlockingGraph() {
+  public Map<String, HashSet<String>> generateBlockingGraph() {
     HashMap<String, HashSet <String>> graph = new HashMap<>();
     for (Map.Entry<String,LockManager> entry : this.lockTable.entrySet()) {
       LockManager lockManager = entry.getValue();
