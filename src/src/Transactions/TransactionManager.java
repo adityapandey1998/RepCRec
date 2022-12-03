@@ -23,14 +23,13 @@ public class TransactionManager {
         }
     }
 
-    private void handleDeadlock() {
+    private Boolean handleDeadlock() {
         Map<String, Set<String>> blockingGraph = new HashMap<>();
         Map<String, Set<String>> graph;
         for (DataManager dataManager: dataManagerList) {
             if(dataManager.isUp()) {
                 graph = dataManager.generateBlockingGraph();
                 graph.forEach((node, adjList) -> {
-//                    for node, adj_list in graph.items():
                     Set<String> tempSet = blockingGraph.getOrDefault(node, new HashSet<>());
                     tempSet.addAll(adjList);
                     blockingGraph.put(node, tempSet);
@@ -39,8 +38,50 @@ public class TransactionManager {
         }
 
         String youngestTransId = null;
-        int youngestTransTime = null;
+        int youngestTransTime = -1;
+
+        for (String node: blockingGraph.keySet()) {
+            Set<String> visited =  new HashSet<>();
+            if (hasCycle(node, node, visited, blockingGraph)) {
+                if (transactionTable.get(node).getStartTime() > youngestTransTime) {
+                    youngestTransTime = transactionTable.get(node).getStartTime();
+                    youngestTransId = node;
+                }
+            }
+        }
+        if (youngestTransId!=null) {
+            System.out.println("Deadlock detected: aborting " + youngestTransId);
+            this.abort(youngestTransId, false);
+            return true;
+        }
+        return false;
     }
+
+    private boolean hasCycle(String current, String root, Set<String> visited, Map<String, Set<String>> blockingGraph) {
+        visited.add(current);
+        for (String neighbour : blockingGraph.get(current)) {
+            if (neighbour.equals(root)) {
+                return true;
+            }
+            if (!visited.contains(neighbour)) {
+                if (hasCycle(neighbour, root, visited, blockingGraph))
+                    return true;
+            }
+        }
+        return false;
+    }
+    public void abort(String transactionId, boolean dueToSite) {
+        for (DataManager dataManager: dataManagerList) {
+            dataManager.abort(transactionId);
+            transactionTable.remove(transactionId);
+            if(dueToSite) {
+                System.out.println("Aborted "+ transactionId + " due to site failure!");
+            } else {
+                System.out.println("Aborted "+ transactionId + " due to deadlock!");
+            }
+        }
+    }
+
     public void processInput(String filePath) throws IOException {
         BufferedReader reader;
         try {
