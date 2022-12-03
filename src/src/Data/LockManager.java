@@ -43,11 +43,10 @@ public class LockManager {
 
   public void addToQueue(QueuedLock newLock) {
     for (QueuedLock queuedLock : this.queue) {
-      if (
-          queuedLock.transactionId.equals(newLock.transactionId) &&
-              (queuedLock.lockType == newLock.lockType
+      if (queuedLock.transactionId.equals(newLock.transactionId))
+              if (queuedLock.lockType == newLock.lockType
                   || newLock.lockType == Constants.LockType.READ)
-      ) {
+       {
         return;
       }
     }

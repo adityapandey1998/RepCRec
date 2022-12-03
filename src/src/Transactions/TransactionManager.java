@@ -136,6 +136,8 @@ public class TransactionManager {
     }
     String line;
     while ((line = reader.readLine()) != null) {
+      if (line.startsWith("//"))
+        continue;
       if (checkAndHandleDeadlock()) {
         executeOp();
       }
@@ -328,7 +330,8 @@ public class TransactionManager {
         operationQueue.add(new Operation(OperationType.WRITE, transactionId, variableName, value));
       }
     } else {
-      System.out.println("Invalid Operation");
+      return;
+//      System.out.println("Main Execution: Invalid Operation | "+ line);
     }
 
   }
