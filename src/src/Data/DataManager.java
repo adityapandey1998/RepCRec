@@ -2,10 +2,7 @@ package Data;
 
 import Transactions.Constants;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DataManager {
   int siteId;
@@ -238,8 +235,49 @@ public class DataManager {
     return !queuedLockLeft.transactionId.equals(queuedLockRight.transactionId);
   }
 
-  void generateBlockingGraph() {
+  Map<String, HashSet<String>> generateBlockingGraph() {
+    HashMap<String, HashSet <String>> graph = new HashMap<>();
+    for (Map.Entry<String,LockManager> entry : this.lockTable.entrySet()) {
+      LockManager lockManager = entry.getValue();
+      if(lockManager.currentLock == null || lockManager.queue == null) {
+        continue;
+      }
 
+      for(QueuedLock queuedLock : lockManager.queue) {
+        if(currentBlocksQueued(lockManager.currentLock, queuedLock)){
+          if(lockManager.currentLock.lockType == Constants.LockType.READ) {
+            for(String transactionId : lockManager.currentLock.transactionIds) {
+              if(!transactionId.equals(queuedLock.transactionId)) {
+                if(!graph.containsKey(queuedLock.transactionId)) {
+                  graph.put(queuedLock.transactionId, new HashSet<>());
+                }
+                graph.get(queuedLock.transactionId).add(transactionId);
+              }
+            }
+          } else {
+            if(!lockManager.currentLock.transactionId.equals(queuedLock.transactionId)) {
+              if(!graph.containsKey(queuedLock.transactionId)) {
+                graph.put(queuedLock.transactionId, new HashSet<>());
+              }
+              graph.get(queuedLock.transactionId).add(lockManager.currentLock.transactionId);
+            }
+          }
+        }
+      }
+
+      for(int i=0; i<lockManager.queue.size(); i++) {
+        for(int j=0; j<i; j++) {
+          if(queuedBlocksQueued(lockManager.queue.get(j), lockManager.queue.get(i))) {
+            String key = lockManager.queue.get(i).transactionId;
+            if(!graph.containsKey(key)) {
+              graph.put(key, new HashSet<>());
+            }
+            graph.get(key).add(lockManager.queue.get(j).transactionId);
+          }
+        }
+      }
+    }
+    return graph;
   }
 
 }
