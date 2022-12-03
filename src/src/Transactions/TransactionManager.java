@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -44,7 +45,7 @@ public class TransactionManager {
   }
 
   /**
-   * Identify and handle deadlocks in the Waitsfor/Blocking Graph.
+   * Identify and handle deadlocks in the sWaitsfor/Blocking Graph.
    *
    * @return Boolean value representing the detection of a deadlock.
    */
@@ -159,18 +160,18 @@ public class TransactionManager {
         operationQueue.remove(operation);
       } else {
         boolean opSuccess = false;
-        switch (operation.getOperationType()) {
-          case READ -> {
-            if (transactionMap.get(operation.getTransactionId()).getTransactionType()
-                == TransactionType.RO) {
-              opSuccess = readOnlyOp(operation.getTransactionId(), operation.getVariableId());
-            } else {
-              opSuccess = readOp(operation.getTransactionId(), operation.getVariableId());
-            }
+        if (Objects.requireNonNull(operation.getOperationType()) == OperationType.READ) {
+          if (transactionMap.get(operation.getTransactionId()).getTransactionType()
+              == TransactionType.RO) {
+            opSuccess = readOnlyOp(operation.getTransactionId(), operation.getVariableId());
+          } else {
+            opSuccess = readOp(operation.getTransactionId(), operation.getVariableId());
           }
-          case WRITE -> opSuccess = writeOp(operation.getTransactionId(), operation.getVariableId(),
+        } else if (operation.getOperationType() == OperationType.WRITE) {
+          opSuccess = writeOp(operation.getTransactionId(), operation.getVariableId(),
               operation.getValue());
-          default -> System.out.println("Invalid Operation");
+        } else {
+          System.out.println("Invalid Operation");
         }
         if (opSuccess) {
           operationQueue.remove(operation);
@@ -292,6 +293,7 @@ public class TransactionManager {
    * @param line Input Line containing the commands
    */
   private void processInputLine(String line) {
+    line = line.trim();
     int length = line.length();
     if (line.startsWith("dump")) {
       System.out.println("Dump:");
@@ -323,7 +325,7 @@ public class TransactionManager {
         System.out.println("Transaction " + transactionId + " doesn't exists!");
       }
     } else if (line.startsWith("W")) {
-      String inputLine = line.substring(2, line.length() - 1);
+      String inputLine = line.trim().substring(2, line.length() - 1);
       String[] inputLineSplit = inputLine.split(",");
       String transactionId = inputLineSplit[0].trim();
       String variableName = inputLineSplit[1].trim();
@@ -349,9 +351,10 @@ public class TransactionManager {
     } else {
       Transaction transaction = new Transaction(transactionId, transactionType, time);
       transactionMap.put(transactionId, transaction);
-      switch (transactionType) {
-        case RO -> System.out.println("Transaction " + transactionId + " begins and is read-only.");
-        case RW -> System.out.println("Transaction " + transactionId + " begins.");
+      if (Objects.requireNonNull(transactionType) == TransactionType.RO) {
+        System.out.println("Transaction " + transactionId + " begins and is read-only.");
+      } else if (transactionType == TransactionType.RW) {
+        System.out.println("Transaction " + transactionId + " begins.");
       }
     }
   }

@@ -20,7 +20,8 @@ public class Variable {
     this.isReadable = true;
     this.proposedValue = null;
     this.isReplicated = isReplicated;
-    this.committedValues = new ArrayList<>(List.of(initialValue));
+    this.committedValues = new ArrayList<>();
+    this.committedValues.add(initialValue);
   }
 
   /**
