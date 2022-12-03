@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Variable Class holds the values of different versions of the dame variable.
+ * Variable Class holds the values of different versions of the same variable.
  */
 public class Variable {
 

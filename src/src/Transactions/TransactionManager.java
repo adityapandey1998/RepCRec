@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import static Transactions.Constants.NUM_SITES;
 
@@ -53,7 +52,7 @@ public class TransactionManager {
     Map<String, HashSet<String>> graph;
     for (DataManager dataManager : sites) {
       if (dataManager.isUp()) {
-        graph = dataManager.generateBlockingGraph();
+        graph = dataManager.generateWaitsforGraph();
         graph.forEach((node, adjList) -> {
           Set<String> tempSet = blockingGraph.getOrDefault(node, new HashSet<>());
           tempSet.addAll(adjList);
@@ -367,7 +366,7 @@ public class TransactionManager {
     DataManager dataManager = sites.get(siteId - 1);
     if (dataManager.isUp()) {
       System.out.println("Failing Site:" + siteId);
-      dataManager.fail(currentTime);
+      dataManager.failSite(currentTime);
       for (Transaction transaction : transactionMap.values()) {
         if (
             !(transaction.getTransactionType() == Constants.TransactionType.RO) &&
@@ -391,7 +390,7 @@ public class TransactionManager {
     DataManager dataManager = sites.get(siteId - 1);
     if (!dataManager.isUp()) {
       System.out.println("Failing Site:" + siteId);
-      dataManager.recover(currentTime);
+      dataManager.recoverSite(currentTime);
     } else {
       System.out.println("Site " + siteId + " is already up!");
     }

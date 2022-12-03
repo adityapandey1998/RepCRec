@@ -32,7 +32,7 @@ public class LockManager {
   }
 
   /**
-   * @param writeLock writeLock to set as current
+   * @param writeLock promotes the current readLock to a writeLock
    */
   public void promoteCurrentLock(WriteLock writeLock) {
     if (this.currentLock != null &&

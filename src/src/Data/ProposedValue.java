@@ -1,7 +1,7 @@
 package Data;
 
 /**
- * This class is used to keep temporary values before being committed.
+ * This class represents a variable that hasn't been committed yet.
  * @author Shubham Jha
  */
 public class ProposedValue {

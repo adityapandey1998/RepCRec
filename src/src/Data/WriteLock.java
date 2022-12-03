@@ -3,7 +3,7 @@ package Data;
 import Transactions.Constants;
 
 /**
- * WriteLock Class
+ * Represents a write lock.
  * @author Shubham Jha
  */
 public class WriteLock extends Lock {
