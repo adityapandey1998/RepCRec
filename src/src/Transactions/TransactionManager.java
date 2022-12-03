@@ -23,7 +23,7 @@ public class TransactionManager {
         }
     }
 
-    private Boolean handleDeadlock() {
+    private boolean handleDeadlock() {
         Map<String, Set<String>> blockingGraph = new HashMap<>();
         Map<String, Set<String>> graph;
         for (DataManager dataManager: dataManagerList) {
@@ -50,7 +50,7 @@ public class TransactionManager {
             }
         }
         if (youngestTransId!=null) {
-            System.out.println("Deadlock detected: aborting " + youngestTransId);
+            System.out.println("Deadlock detected: aborting transaction " + youngestTransId);
             this.abort(youngestTransId, false);
             return true;
         }
@@ -92,8 +92,78 @@ public class TransactionManager {
         }
         String line = "";
         while ((line = reader.readLine()) != null) {
+            if(handleDeadlock()) {
 
+            }
         }
+    }
+
+    private void executeOp() {
+        Deque<Operation> operationQueueCopy = new ArrayDeque<>(operationQueue);
+        for (Operation operation: operationQueueCopy) {
+            if (!transactionTable.containsKey(operation.getTransactionId())) {
+                operationQueue.remove(operation);
+            } else {
+                boolean opSuccess = false;
+                if (operation.getCommand().equals("R")) {
+                    if (transactionTable.get(operation.getTransactionId()).getTransactionType() == Constants.TransactionType.RO) {
+                        opSuccess = readOnlyOp(operation.getTransactionId(), operation.getVariableId());
+                    } else {
+                        opSuccess = readOp(operation.getTransactionId(), operation.getVariableId());
+                    }
+                } else if (operation.getCommand().equals("W")) {
+                    opSuccess = writeOp(operation.getTransactionId(), operation.getVariableId(), operation.getValue());
+                } else {
+                    System.out.println("Invalid Operation");
+                }
+                if (opSuccess)
+                    operationQueue.remove(operation);
+            }
+        }
+    }
+
+    private boolean readOp(String transactionId, String variableId) {
+        if (!transactionTable.containsKey(transactionId)) {
+            System.out.println("Transaction "+ transactionId+ " doesn't exist in the transaction table!");
+        } else {
+            for (DataManager dataManager: dataManagerList) {
+                if (dataManager.isUp() && dataManager.hasVariable(variableId)) {
+                    boolean result = dataManager.read(transactionId, variableId);
+                    if (result) {
+                        Transaction transaction = transactionTable.get(transactionId);
+                        transaction.sitesAccessed.add(dataManager.getSiteId());
+                        transactionTable.put(transactionId, transaction);
+                        System.out.println(String.format("%s reads %s.%s: %d".format(
+                                transactionId, variableId, dataManager.getSiteId(), result.value)));
+                        return true;
+                    }
+
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean readOnlyOp(String transactionId, String variableId) {
+        if (!transactionTable.containsKey(transactionId)) {
+            System.out.println("Transaction "+ transactionId+ " doesn't exist in the transaction table!");
+        } else {
+            for (DataManager dataManager: dataManagerList) {
+                if (dataManager.isUp() && dataManager.hasVariable(variableId)) {
+                    boolean result = dataManager.readSnapshot(transactionId, variableId);
+                    if (result) {
+                        System.out.println(String.format("%s (RO) reads %s.%s: %d".format(
+                                transactionId, variableId, dataManager.getSiteId(), result.value)));
+                        return true;
+                    }
+
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean writeOp(String transactionId, String variableId, int value) {
     }
 
     public void processInputFile(String filePath) throws IOException {
