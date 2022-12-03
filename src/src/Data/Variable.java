@@ -29,6 +29,6 @@ public class Variable {
   }
 
   public void addCommitValue(CommitValue commitValue) {
-    this.committedValues.add(commitValue);
+    this.committedValues.add(0, commitValue);
   }
 }
