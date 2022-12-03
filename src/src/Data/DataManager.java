@@ -170,6 +170,10 @@ public class DataManager {
       return Integer.parseInt(a.variableId.substring(1)) - Integer.parseInt(b.variableId.substring(1));
     }
   }
+
+  /**
+   * Output Function. Variable names are sorted based on their integer prefixes.
+   */
   public void dump() {
     String siteStatus = this.isUp() ? "Up" : "Down";
     StringBuilder output = new StringBuilder(
@@ -183,6 +187,9 @@ public class DataManager {
     System.out.println(output);
   }
 
+  /**
+   * @param transactionId Transaction to Abort
+   */
   public void abort(String transactionId) {
     for(LockManager lockManager : this.lockTable.values()) {
       lockManager.releaseCurrentLockByTransaction(transactionId);
@@ -196,6 +203,10 @@ public class DataManager {
     resolveLockTable();
   }
 
+  /**
+   * @param transactionId transaction to commit
+   * @param commitTimestamp commit time
+   */
   public void commit(String transactionId, int commitTimestamp) {
     for (LockManager lockManager : this.lockTable.values()) {
       lockManager.releaseCurrentLockByTransaction(transactionId);

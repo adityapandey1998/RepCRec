@@ -27,7 +27,6 @@ public class TransactionManager {
   private final List<DataManager> sites;
   private final Map<String, Transaction> transactionMap;
   private final Deque<Operation> operationQueue;
-  private final TreeSet<Operation> operationMap;
   private int currentTime = 0;
 
   /**
@@ -36,7 +35,6 @@ public class TransactionManager {
   public TransactionManager() {
     transactionMap = new HashMap<>();
     operationQueue = new ArrayDeque<>();
-    operationMap = new TreeSet<>();
     sites = new ArrayList<>();
     int siteCount = 10;
     for (int siteNo = 0; siteNo < siteCount; siteNo++) {
