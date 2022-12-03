@@ -1,9 +1,7 @@
 package Data;
 
 import Transactions.Constants;
-import Transactions.Transaction;
 
-import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +13,7 @@ public class DataManager {
   Map<String, Variable> data;
   Map<String, LockManager> lockTable;
   List<Integer> failedTimestampList;
-  List<Transaction> recoveredTransactionList;
+  List<Integer> recoveredTimestampList;
 
   DataManager(int siteId) {
     this.siteId = siteId;
@@ -23,7 +21,7 @@ public class DataManager {
     this.data = new HashMap<>();
     this.lockTable = new HashMap<>();
     this.failedTimestampList = new ArrayList<>();
-    this.recoveredTransactionList = new ArrayList<>();
+    this.recoveredTimestampList = new ArrayList<>();
 
     for(int varIdx = 1; varIdx <= 20; varIdx++) {
       String varId = "x" + varIdx;
@@ -202,4 +200,23 @@ public class DataManager {
       }
     }
   }
+
+  void fail(int timestamp) {
+    this.isUp = false;
+    this.failedTimestampList.add(timestamp);
+    for(LockManager lockManager : this.lockTable.values()) {
+      lockManager.clear();
+    }
+  }
+
+  void recover(int timestamp) {
+    this.isUp = true;
+    this.recoveredTimestampList.add(timestamp);
+    for(Variable var : this.data.values()) {
+      if(var.isReplicated) {
+        var.isReadable = false;
+      }
+    }
+  }
+
 }
