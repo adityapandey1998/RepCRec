@@ -44,7 +44,7 @@ public class TransactionManager {
   }
 
   /**
-   * Identify and handle deadlocks in the Blocking Graph.
+   * Identify and handle deadlocks in the Waitsfor/Blocking Graph.
    *
    * @return Boolean value representing the detection of a deadlock.
    */
@@ -53,7 +53,7 @@ public class TransactionManager {
     Map<String, HashSet<String>> graph;
     for (DataManager dataManager : sites) {
       if (dataManager.isUp()) {
-        graph = dataManager.generateBlockingGraph();
+        graph = dataManager.generateWaitsForGraph();
         graph.forEach((node, adjList) -> {
           Set<String> tempSet = blockingGraph.getOrDefault(node, new HashSet<>());
           tempSet.addAll(adjList);
@@ -365,7 +365,7 @@ public class TransactionManager {
     DataManager dataManager = sites.get(siteId - 1);
     if (dataManager.isUp()) {
       System.out.println("Failing Site:" + siteId);
-      dataManager.fail(currentTime);
+      dataManager.failSite(currentTime);
       for (Transaction transaction : transactionMap.values()) {
         if (
             !(transaction.getTransactionType() == TransactionType.RO) &&
@@ -391,7 +391,7 @@ public class TransactionManager {
       System.out.println("Site " + siteId + " is already up!");
     } else {
       System.out.println("Failing Site:" + siteId);
-      dataManager.recover(currentTime);
+      dataManager.recoverSite(currentTime);
     }
   }
 

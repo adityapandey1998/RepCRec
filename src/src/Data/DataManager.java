@@ -195,7 +195,7 @@ public class DataManager {
         }
       }
     }
-    resolveLockTable();
+    resolveLockMap();
   }
 
   public void commitTransaction(String transactionId, int commitTimestamp) {
@@ -213,10 +213,10 @@ public class DataManager {
         val.isReadable = true;
       }
     }
-    resolveLockTable();
+    resolveLockMap();
   }
 
-  public void resolveLockTable() {
+  public void resolveLockMap() {
     for (Map.Entry<String, LockManager> entry : this.lockMap.entrySet()) {
       String variableId = entry.getKey();
       LockManager lockManager = entry.getValue();
@@ -254,7 +254,7 @@ public class DataManager {
     }
   }
 
-  public void fail(int timestamp) {
+  public void failSite(int timestamp) {
     this.isUp = false;
     this.failureTimestamps.add(timestamp);
     for (LockManager lockManager : this.lockMap.values()) {
@@ -262,7 +262,7 @@ public class DataManager {
     }
   }
 
-  public void recover(int timestamp) {
+  public void recoverSite(int timestamp) {
     this.isUp = true;
     this.recoveryTimestamps.add(timestamp);
     for (Variable var : this.dataMap.values()) {
@@ -272,7 +272,7 @@ public class DataManager {
     }
   }
 
-  boolean currentBlocksQueued(Lock currentLock, Lock queuedLock) {
+  boolean currentLockBlocksQueuedLock(Lock currentLock, Lock queuedLock) {
     if (currentLock.lockType == Constants.LockType.READ) {
       if (queuedLock.lockType == Constants.LockType.READ || (currentLock.transactionIds.size() == 1
           && currentLock.transactionIds.contains(queuedLock.transactionId))
@@ -284,7 +284,7 @@ public class DataManager {
     return !currentLock.transactionId.equals(queuedLock.transactionId);
   }
 
-  boolean queuedBlocksQueued(Lock queuedLockLeft, Lock queuedLockRight) {
+  boolean queuedLockBlocksQueuedLock(Lock queuedLockLeft, Lock queuedLockRight) {
     if (queuedLockLeft.lockType == Constants.LockType.READ
         && queuedLockRight.lockType == Constants.LockType.READ) {
       return false;
@@ -292,8 +292,8 @@ public class DataManager {
     return !queuedLockLeft.transactionId.equals(queuedLockRight.transactionId);
   }
 
-  public Map<String, HashSet<String>> generateBlockingGraph() {
-    HashMap<String, HashSet<String>> graph = new HashMap<>();
+  public Map<String, HashSet<String>> generateWaitsForGraph() {
+    HashMap<String, HashSet<String>> waitsForgraph = new HashMap<>();
     for (Map.Entry<String, LockManager> entry : this.lockMap.entrySet()) {
       LockManager lockManager = entry.getValue();
 
@@ -303,26 +303,26 @@ public class DataManager {
       }
 
       for (QueuedLock queuedLock : lockManager.queue) {
-        if (currentBlocksQueued(lockManager.currentLock, queuedLock)) {
+        if (currentLockBlocksQueuedLock(lockManager.currentLock, queuedLock)) {
           if (lockManager.currentLock.lockType == Constants.LockType.READ) {
             for (String transactionId : lockManager.currentLock.transactionIds) {
               if (!transactionId.equals(queuedLock.transactionId)) {
-                if (!graph.containsKey(queuedLock.transactionId)) {
-                  graph.put(queuedLock.transactionId, new HashSet<>());
+                if (!waitsForgraph.containsKey(queuedLock.transactionId)) {
+                  waitsForgraph.put(queuedLock.transactionId, new HashSet<>());
                 }
-                HashSet<String> tempSet = graph.get(queuedLock.transactionId);
+                HashSet<String> tempSet = waitsForgraph.get(queuedLock.transactionId);
                 tempSet.add(transactionId);
-                graph.put(queuedLock.transactionId, tempSet);
+                waitsForgraph.put(queuedLock.transactionId, tempSet);
               }
             }
           } else {
             if (!lockManager.currentLock.transactionId.equals(queuedLock.transactionId)) {
-              if (!graph.containsKey(queuedLock.transactionId)) {
-                graph.put(queuedLock.transactionId, new HashSet<>());
+              if (!waitsForgraph.containsKey(queuedLock.transactionId)) {
+                waitsForgraph.put(queuedLock.transactionId, new HashSet<>());
               }
-              HashSet<String> tempSet = graph.get(queuedLock.transactionId);
+              HashSet<String> tempSet = waitsForgraph.get(queuedLock.transactionId);
               tempSet.add(lockManager.currentLock.transactionId);
-              graph.put(queuedLock.transactionId, tempSet);
+              waitsForgraph.put(queuedLock.transactionId, tempSet);
             }
           }
         }
@@ -330,19 +330,19 @@ public class DataManager {
 
       for (int i = 0; i < lockManager.queue.size(); i++) {
         for (int j = 0; j < i; j++) {
-          if (queuedBlocksQueued(lockManager.queue.get(j), lockManager.queue.get(i))) {
+          if (queuedLockBlocksQueuedLock(lockManager.queue.get(j), lockManager.queue.get(i))) {
             String key = lockManager.queue.get(i).transactionId;
-            if (!graph.containsKey(key)) {
-              graph.put(key, new HashSet<>());
+            if (!waitsForgraph.containsKey(key)) {
+              waitsForgraph.put(key, new HashSet<>());
             }
-            HashSet<String> tempSet = graph.get(key);
+            HashSet<String> tempSet = waitsForgraph.get(key);
             tempSet.add(lockManager.queue.get(j).transactionId);
-            graph.put(key, tempSet);
+            waitsForgraph.put(key, tempSet);
           }
         }
       }
     }
-    return graph;
+    return waitsForgraph;
   }
 
 }
