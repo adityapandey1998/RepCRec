@@ -1,40 +1,65 @@
 package Transactions;
 
+import Sites.Site;
+import OperationHandlers.dumpHandlers;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-public class TransactionManager {
-    private List<DataManager> dataManagerList;
-    private static Integer siteCount = 10;
-    private Map<String, Transaction> transactionTable;
-    private int time = 0;
-
-    private Deque<Operation> operationQueue;
-    public TransactionManager() {
-        transactionTable = new HashMap<>();
-        operationQueue = new ArrayDeque<>();
+public class TransactionManagerOld {
+    static public Integer siteCount = 10;
+    static public Integer varCount = 20;
+    private List<Site> siteList;
+    private List<Transaction> transactionList;
+    private Map<String, HashSet<Site>> varSiteMap;
 
 
-        dataManagerList = new ArrayList<DataManager>();
-        for (int siteNo = 0; siteNo<siteCount; siteNo++ ) {
-            dataManagerList.add(new DataManager(siteNo+1));
-        }
+    public TransactionManagerOld() {
+        this.siteList = new ArrayList<Site>();
+        this.transactionList = new ArrayList<Transaction>();
+        this.varSiteMap = new HashMap<String, HashSet<Site>>();
+
+        this.createLists();
     }
 
-    public void processInput(String filePath) throws IOException {
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(filePath));
-        } catch (FileNotFoundException fileNotFoundException) {
-            System.err.println("FileNotFoundException Raised");
-            return;
-        }
-        String line = "";
-        while ((line = reader.readLine()) != null) {
+    public void addTransaction(Transaction transaction) {
+        transactionList.add(transaction);
+    }
 
+
+    public void createLists() {
+        for (int siteNo = 0; siteNo<siteCount; siteNo++ ) {
+            siteList.add(new Site(siteNo+1));
+        }
+
+        for (int varNo = 0; varNo < varCount; varNo++ ) {
+            String varName = "x" + (varNo+1);
+            if (varNo%2 == 1) {
+                Site site = sites.get((varNo+1) % 10);
+                site.addDataMap(varName, 0, 10 * (varNo+1));
+
+                HashSet<Site> set = varSiteMap.getOrDefault(varName, new HashSet<Site>());
+                set.add(site);
+                varSiteMap.put(varName, set);
+
+                site.addStartEndTimeMap(0, Integer.MAX_VALUE);
+                site.getVariableStaleStateMap().put(varName, false);
+            } else {
+                for (int siteNo = 0; siteNo<siteCount; siteNo++ ) {
+                    Site site = sites.get((siteNo));
+                    site.addDataMap(varName, 0, 10 * (varNo+1));
+
+                    HashSet<Site> set = varSiteMap.getOrDefault(varName, new HashSet<Site>());
+                    set.add(site);
+                    varSiteMap.put(varName, set);
+
+                    site.addStartEndTimeMap(0, Integer.MAX_VALUE);
+                    site.getVariableStaleStateMap().put(varName, false);
+                }
+            }
         }
     }
 

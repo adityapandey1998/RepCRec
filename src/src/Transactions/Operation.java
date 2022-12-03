@@ -1,6 +1,6 @@
 package Transactions;
 
-public class Operations {
+public class Operation {
     public String getCommand() {
         return command;
     }
