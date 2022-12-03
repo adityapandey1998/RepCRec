@@ -53,3 +53,6 @@ Finally, run the directory using:
 ```bash
 $ reprounzip directory run ./RepCRepWithTests
 ```
+
+All the outputs can be found at `RepCRepWithTests/root/home/ap6624_nyu_edu/myoutputs/`.
+
