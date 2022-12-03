@@ -1,12 +1,8 @@
 package Data;
 
 import Transactions.Constants;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+
+import java.util.*;
 
 public class DataManager {
 
@@ -19,7 +15,7 @@ public class DataManager {
   public DataManager(int siteId) {
     this.siteId = siteId;
     this.isUp = true;
-    this.data = new HashMap<>();
+    this.data = new TreeMap<>();
     this.lockTable = new HashMap<>();
     this.failedTimestampList = new ArrayList<>();
     this.recoveredTimestampList = new ArrayList<>();
