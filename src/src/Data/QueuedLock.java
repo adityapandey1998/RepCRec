@@ -3,8 +3,7 @@ package Data;
 import Transactions.Constants;
 
 /**
- * QueuedLock Class
- *
+ * Represents a lock that is currently in the LockManager queue.
  * @author Shubham Jha
  */
 public class QueuedLock extends Lock {

@@ -6,6 +6,11 @@ import Transactions.Constants;
 
 import java.util.*;
 
+/**
+ * Translates Represents a single site. Maintains site state and is responsible for
+ * managing variables and locks.
+ * @author Shubham Jha
+ */
 public class DataManager {
 
   int siteId;
@@ -14,6 +19,9 @@ public class DataManager {
   Map<String, LockManager> lockMap;
   List<Integer> failureTimestamps, recoveryTimestamps;
 
+  /**
+   * Initialize Class Members and the data
+   */
   public DataManager(int siteId) {
     this.siteId = siteId;
     this.isUp = true;
@@ -40,22 +48,40 @@ public class DataManager {
     }
   }
 
+  /**
+   * @return returns the status of the current site.
+   */
   public boolean isUp() {
     return isUp;
   }
 
+  /**
+   * @param up Updates the status of the current site.
+   */
   public void setUp(boolean up) {
     isUp = up;
   }
 
+  /**
+   * @return Returns ID of the current site.
+   */
   public int getSiteId() {
     return siteId;
   }
 
+  /**
+   * @param variableId ID of the variable to check for.
+   * @return Returns whether a variable exists in the dataMap.
+   */
   public boolean variableExists(String variableId) {
     return this.dataMap.containsKey(variableId);
   }
 
+  /**
+   * @param variableId ID of the variable to read
+   * @param timestamp The timestamp before which the variable needs to be read
+   * @return Returns the latest value of the variable specified by variableId before the timestamp.
+   */
   public Result readVariableSnapshot(String variableId, int timestamp) {
     Variable var = this.dataMap.get(variableId);
     if (var.isReadable) {
@@ -76,6 +102,11 @@ public class DataManager {
     return new Result(false);
   }
 
+  /**
+   * @param transactionId the ID of the context transaction
+   * @param variableId the ID of the variable to read
+   * @return returns the value of a variable in the context of a specific transaction
+   */
   public Result readVariable(String transactionId, String variableId) {
     Variable var = this.dataMap.get(variableId);
     if (var.isReadable) {
@@ -107,6 +138,11 @@ public class DataManager {
     return new Result(false);
   }
 
+  /**
+   * @param transactionId the ID of the transaction on which the lock needs to be acquired.
+   * @param variableId the ID of the variable on which the lock needs to be acquired.
+   * @return Returns true if write lock successfully acquired, false otherwise.
+   */
   public boolean acquireWriteLock(String transactionId, String variableId) {
     LockManager lockManager = this.lockMap.get(variableId);
     Lock currentLock = lockManager.currentLock;
@@ -176,6 +212,9 @@ public class DataManager {
     }
   }
 
+  /**
+   * Dumps the site status and the values of the variables to console.
+   */
   public void dump() {
     String siteStatus = this.isUp ? "Up" : "Down";
     StringBuilder result = new StringBuilder(
@@ -190,6 +229,9 @@ public class DataManager {
     System.out.println(result);
   }
 
+  /**
+   * @param transactionId The ID of the transaction to abort.
+   */
   public void abortTransaction(String transactionId) {
     for (LockManager lockManager : this.lockMap.values()) {
       lockManager.releaseTransactionLock(transactionId);
@@ -203,6 +245,10 @@ public class DataManager {
     resolveLockMap();
   }
 
+  /**
+   * @param transactionId The ID of the transaction to be committed.
+   * @param commitTimestamp The timestamp of the commit.
+   */
   public void commitTransaction(String transactionId, int commitTimestamp) {
     for (LockManager lockManager : this.lockMap.values()) {
       lockManager.releaseTransactionLock(transactionId);
@@ -221,6 +267,9 @@ public class DataManager {
     resolveLockMap();
   }
 
+  /**
+   * Analyze the lockMap and move specific queued locks to the front.
+   */
   public void resolveLockMap() {
     for (Map.Entry<String, LockManager> entry : this.lockMap.entrySet()) {
       String variableId = entry.getKey();
@@ -259,6 +308,9 @@ public class DataManager {
     }
   }
 
+  /**
+   * @param timestamp timestamp at which to fail the current site.
+   */
   public void failSite(int timestamp) {
     this.isUp = false;
     this.failureTimestamps.add(timestamp);
@@ -267,6 +319,9 @@ public class DataManager {
     }
   }
 
+  /**
+   * @param timestamp timestamp at which the current site recovers
+   */
   public void recoverSite(int timestamp) {
     this.isUp = true;
     this.recoveryTimestamps.add(timestamp);
@@ -277,6 +332,11 @@ public class DataManager {
     }
   }
 
+  /**
+   * @param currentLock the current lock
+   * @param queuedLock a queued lock
+   * @return returns true if the current lock is blocking an already queued lock.
+   */
   boolean currentLockBlocksQueuedLock(Lock currentLock, Lock queuedLock) {
     if (currentLock.lockType == Constants.LockType.READ) {
       if (queuedLock.lockType == Constants.LockType.READ || (currentLock.transactionIds.size() == 1
@@ -289,14 +349,22 @@ public class DataManager {
     return !currentLock.transactionId.equals(queuedLock.transactionId);
   }
 
-  boolean queuedLockBlocksQueuedLock(Lock queuedLockLeft, Lock queuedLockRight) {
-    if (queuedLockLeft.lockType == Constants.LockType.READ
-        && queuedLockRight.lockType == Constants.LockType.READ) {
+  /**
+   * @param queuedLockFirst a queued lock
+   * @param queuedLockSecond another queued lock
+   * @return returns true if a queued lock is blocking another queued lock
+   */
+  boolean queuedLockBlocksQueuedLock(Lock queuedLockFirst, Lock queuedLockSecond) {
+    if (queuedLockFirst.lockType == Constants.LockType.READ
+        && queuedLockSecond.lockType == Constants.LockType.READ) {
       return false;
     }
-    return !queuedLockLeft.transactionId.equals(queuedLockRight.transactionId);
+    return !queuedLockFirst.transactionId.equals(queuedLockSecond.transactionId);
   }
 
+  /**
+   * @return returns the generated waitsFor graph for the current site
+   */
   public Map<String, HashSet<String>> generateWaitsForGraph() {
     HashMap<String, HashSet<String>> waitsForgraph = new HashMap<>();
     for (Map.Entry<String, LockManager> entry : this.lockMap.entrySet()) {

@@ -5,8 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * ReadLock Class
- *
+ * Represents a read lock.
  * @author Shubham Jha
  */
 public class ReadLock extends Lock {
