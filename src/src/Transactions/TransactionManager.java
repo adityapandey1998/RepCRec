@@ -53,7 +53,6 @@ public class TransactionManager {
     for (DataManager dataManager : sites) {
       if (dataManager.isUp()) {
         graph = dataManager.generateBlockingGraph();
-//        System.out.println(graph);
         graph.forEach((node, adjList) -> {
           Set<String> tempSet = blockingGraph.getOrDefault(node, new HashSet<>());
           tempSet.addAll(adjList);
@@ -61,7 +60,6 @@ public class TransactionManager {
         });
       }
     }
-    System.out.println(blockingGraph);
     String youngestTransId = null;
     int youngestTransTime = -1;
 
@@ -292,7 +290,6 @@ public class TransactionManager {
    * @param line Input Line containing the commands
    */
   private void executeOperation(String line) {
-//    System.out.println("TimeStamp: "+currentTime+"--------");
     if (line.startsWith("dump")) {
       System.out.println("Dump:");
       dump();

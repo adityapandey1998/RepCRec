@@ -102,7 +102,6 @@ public class DataManager {
         lockManager.addToQueue(new QueuedLock(variableId, Constants.LockType.READ, transactionId));
         return new Result(false);
       }
-//      System.out.println("Set Lock 1");
       lockManager.setCurrentLock(new ReadLock(variableId, transactionId));
       return new Result(true, var.getLastCommittedValue().getValue());
     }
