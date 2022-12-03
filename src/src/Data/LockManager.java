@@ -9,7 +9,7 @@ public class LockManager {
 
   String variableId;
   public Lock currentLock;
-  List<QueuedLock> queue;
+  public List<QueuedLock> queue;
 
   public LockManager(String variableId) {
     this.variableId = variableId;
@@ -67,7 +67,7 @@ public class LockManager {
     return false;
   }
 
-  void releaseCurrentLockByTransaction(String transactionId) {
+  public void releaseCurrentLockByTransaction(String transactionId) {
     if (this.currentLock != null) {
       if (this.currentLock.lockType == Constants.LockType.READ) {
         this.currentLock.transactionIds.remove(transactionId);

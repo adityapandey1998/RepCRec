@@ -28,7 +28,7 @@ public class Variable {
     return this.tempValue;
   }
 
-  void addCommitValue(CommitValue commitValue) {
+  public void addCommitValue(CommitValue commitValue) {
     this.committedValues.add(commitValue);
   }
 }

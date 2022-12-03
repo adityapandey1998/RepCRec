@@ -156,6 +156,50 @@ public class DataManager {
   }
 
   void commit(String transactionId, int commitTimestamp) {
+    for(LockManager lockManager : this.lockTable.values()) {
+      lockManager.releaseCurrentLockByTransaction(transactionId);
+    }
+    for(Variable val : this.data.values()) {
+      if(val.tempValue != null && val.tempValue.getTransactionId().equals(transactionId)) {
+        val.addCommitValue(new CommitValue(val.tempValue.getValue(), commitTimestamp));
+        val.isReadable = true;
+      }
+    }
+    resolveLockTable();
+  }
 
+  void resolveLockTable() {
+    for (Map.Entry<String,LockManager> entry : this.lockTable.entrySet()) {
+      String variableId = entry.getKey();
+      LockManager lockManager = entry.getValue();
+
+      if(lockManager.queue != null) {
+        if(lockManager.currentLock == null) {
+          Lock firstQueueLock = lockManager.queue.get(0);
+          lockManager.queue.remove(0);
+
+          if(firstQueueLock.getLockType() == Constants.LockType.READ) {
+            lockManager.setCurrentLock(new ReadLock(firstQueueLock.getVariableId(), firstQueueLock.transactionId));
+          } else {
+            lockManager.setCurrentLock(new WriteLock(firstQueueLock.getVariableId(), firstQueueLock.transactionId));
+          }
+        }
+
+        if(lockManager.currentLock.getLockType() == Constants.LockType.READ) {
+          for (QueuedLock queuedLock : lockManager.queue) {
+            if(queuedLock.getLockType() == Constants.LockType.WRITE) {
+              if(lockManager.currentLock.transactionIds.size() == 1 &&
+                      lockManager.currentLock.transactionIds.contains(queuedLock.getTransactionId())) {
+                lockManager.promoteCurrentLock(new WriteLock(queuedLock.getVariableId(), queuedLock.getTransactionId()));
+                lockManager.queue.remove(queuedLock);
+              }
+              break;
+            }
+            lockManager.shareReadLock(queuedLock.getTransactionId());
+            lockManager.queue.remove(queuedLock);
+          }
+        }
+      }
+    }
   }
 }
