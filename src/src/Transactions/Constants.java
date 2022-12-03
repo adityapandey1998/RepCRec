@@ -6,8 +6,7 @@ public class Constants {
   public final static int NUM_VARIABLES = 20;
 
   /**
-   * RW - Read-Write
-   * RO - Read-Only
+   * RW - Read-Write RO - Read-Only
    */
   public enum TransactionType {
     RW, RO

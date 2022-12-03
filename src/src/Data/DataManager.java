@@ -1,4 +1,5 @@
-import Data.*;
+package Data;
+
 import Transactions.Constants;
 import Transactions.Transaction;
 

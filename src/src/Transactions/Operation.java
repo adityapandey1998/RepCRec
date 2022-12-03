@@ -11,9 +11,9 @@ public class Operation {
   public int value;
 
   /**
-   * @param command This is a Read Constructor
+   * @param command       This is a Read Constructor
    * @param transactionId Transaction ID
-   * @param variableId Variable ID
+   * @param variableId    Variable ID
    */
   public Operation(Constants.OperationType command, String transactionId, String variableId) {
     this.command = command;
@@ -22,12 +22,13 @@ public class Operation {
   }
 
   /**
-   * @param command This is a Write Constructor
+   * @param command       This is a Write Constructor
    * @param transactionId Transaction ID
-   * @param variableId Variable ID
-   * @param value Value to assign
+   * @param variableId    Variable ID
+   * @param value         Value to assign
    */
-  public Operation(Constants.OperationType command, String transactionId, String variableId, int value) {
+  public Operation(Constants.OperationType command, String transactionId, String variableId,
+      int value) {
     this.command = command;
     this.transactionId = transactionId;
     this.variableId = variableId;

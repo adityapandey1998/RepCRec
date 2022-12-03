@@ -1,5 +1,6 @@
 package Transactions;
 
+import Data.DataManager;
 import Data.Result;
 import Transactions.Constants.OperationType;
 import java.io.BufferedReader;
@@ -15,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import Data.DataManager;
-
 /**
  * Translates Read/Write requests to the DB into requests for the Data Managers at all sites.
  */
@@ -24,9 +23,8 @@ public class TransactionManager {
 
   private final List<DataManager> dataManagerList;
   private final Map<String, Transaction> transactionTable;
-  private int time = 0;
-
   private final Deque<Operation> operationQueue;
+  private int time = 0;
 
   /**
    * Initialize Class Members and create Data Managers
@@ -44,6 +42,7 @@ public class TransactionManager {
 
   /**
    * Identify and handle deadlocks in the Blocking Graph.
+   *
    * @return Boolean value representing the detection of a deadlock.
    */
   private boolean handleDeadlock() {
@@ -82,6 +81,7 @@ public class TransactionManager {
 
   /**
    * Simple DFS-Based Cycle detection algorithm
+   *
    * @return true if a cycle is found with the given root.
    */
   private boolean hasCycle(String current, String root, Set<String> visited,
@@ -92,9 +92,9 @@ public class TransactionManager {
         return true;
       }
       if (!visited.contains(neighbour)) {
-          if (hasCycle(neighbour, root, visited, blockingGraph)) {
-              return true;
-          }
+        if (hasCycle(neighbour, root, visited, blockingGraph)) {
+          return true;
+        }
       }
     }
     return false;
@@ -102,7 +102,8 @@ public class TransactionManager {
 
   /**
    * Function to abort a given transaction.
-   * @param transactionId ID of the transaction to abort.
+   *
+   * @param transactionId    ID of the transaction to abort.
    * @param dueToSiteFailure If the abort is due to a site failed.
    */
   public void abort(String transactionId, boolean dueToSiteFailure) {
@@ -119,6 +120,7 @@ public class TransactionManager {
 
   /**
    * Entry Point to the Transaction Manager running on given Input File
+   *
    * @param filePath Path to input file
    * @throws IOException Error while reading the file
    */
@@ -164,16 +166,16 @@ public class TransactionManager {
         } else {
           System.out.println("Invalid Operation");
         }
-          if (opSuccess) {
-              operationQueue.remove(operation);
-          }
+        if (opSuccess) {
+          operationQueue.remove(operation);
+        }
       }
     }
   }
 
   /**
    * @param transactionId Transaction corresponding to Read Operation
-   * @param variableId Variable corresponding to Read Operation
+   * @param variableId    Variable corresponding to Read Operation
    * @return Success of General Read Operation
    */
   private boolean readOp(String transactionId, String variableId) {
@@ -201,7 +203,7 @@ public class TransactionManager {
 
   /**
    * @param transactionId Transaction corresponding to Read-Only Read Operation
-   * @param variableId Variable corresponding to Read-Only Read Operation
+   * @param variableId    Variable corresponding to Read-Only Read Operation
    * @return Success of Read-Only Read Operation
    */
   private boolean readOnlyOp(String transactionId, String variableId) {
@@ -226,8 +228,8 @@ public class TransactionManager {
 
   /**
    * @param transactionId Transaction corresponding to Write Operation
-   * @param variableId Variable corresponding to Write Operation
-   * @param value Value to be written
+   * @param variableId    Variable corresponding to Write Operation
+   * @param value         Value to be written
    * @return Success of Write Operation
    */
   private boolean writeOp(String transactionId, String variableId, int value) {
@@ -240,9 +242,9 @@ public class TransactionManager {
         if (dataManager.isUp() && dataManager.hasVariable(variableId)) {
           allSitesDown = false;
           boolean result = dataManager.getWriteLock(transactionId, variableId);
-            if (!result) {
-                canGetAllLocks = false;
-            }
+          if (!result) {
+            canGetAllLocks = false;
+          }
         }
       }
       if (!(canGetAllLocks && allSitesDown)) {
@@ -279,6 +281,7 @@ public class TransactionManager {
   /**
    * Identify the Operation, get the operands and pass the parameters to the corresponding
    * functions.
+   *
    * @param line Input Line containing the commands
    */
   private void executeInput(String line) {
@@ -329,9 +332,9 @@ public class TransactionManager {
   }
 
   /**
-   * @param transactionId ID of the new Transaction
+   * @param transactionId   ID of the new Transaction
    * @param transactionType Type of the new Transaction
-   * @param time Start time of the new Transaction
+   * @param time            Start time of the new Transaction
    */
   private void beginTransaction(String transactionId, Constants.TransactionType transactionType,
       int time) {
@@ -350,6 +353,7 @@ public class TransactionManager {
 
   /**
    * Function to trigger failure of given site.
+   *
    * @param siteId ID of the site to fail.
    */
   private void fail(int siteId) {
@@ -373,6 +377,7 @@ public class TransactionManager {
 
   /**
    * Function to trigger recovery of given site.
+   *
    * @param siteId ID of the site to recover.
    */
   private void recover(int siteId) {
@@ -387,6 +392,7 @@ public class TransactionManager {
 
   /**
    * Function to trigger end of given transaction.
+   *
    * @param transactionId ID of the transaction to end.
    */
   private void end(String transactionId) {
@@ -403,8 +409,9 @@ public class TransactionManager {
 
   /**
    * Function to commit given transaction.
+   *
    * @param transactionId ID of the transaction to commit.
-   * @param time commit time.
+   * @param time          commit time.
    */
   private void commit(String transactionId, int time) {
     for (DataManager dataManager : dataManagerList) {
