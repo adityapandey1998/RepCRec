@@ -1,8 +1,11 @@
 package Transactions;
 
+import static Transactions.Constants.NUM_SITES;
+
 import Data.DataManager;
 import Data.Result;
 import Transactions.Constants.OperationType;
+import Transactions.Constants.TransactionType;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -15,9 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
-
-import static Transactions.Constants.NUM_SITES;
 
 /**
  * Translates Read/Write requests to the DB into requests for the Data Managers at all sites.
@@ -89,12 +89,12 @@ public class TransactionManager {
   private boolean hasCycle(String current, String root, Set<String> visited,
       Map<String, Set<String>> blockingGraph) {
     visited.add(current);
-    for (String neighbour : blockingGraph.getOrDefault(current, new HashSet<>())) {
-      if (neighbour.equals(root)) {
+    for (String adj : blockingGraph.getOrDefault(current, new HashSet<>())) {
+      if (adj.equals(root)) {
         return true;
       }
-      if (!visited.contains(neighbour)) {
-        if (hasCycle(neighbour, root, visited, blockingGraph)) {
+      if (!visited.contains(adj)) {
+        if (hasCycle(adj, root, visited, blockingGraph)) {
           return true;
         }
       }
@@ -136,14 +136,15 @@ public class TransactionManager {
     }
     String line;
     while ((line = reader.readLine()) != null) {
-      if (line.startsWith("//"))
+      // Skip Comments
+      if (line.startsWith("//")) {
         continue;
-      System.out.println("----- Timestamp: " + currentTime + " -----");
-      if (checkAndHandleDeadlock()) {
-        executeOpQueue();
       }
-      executeOperation(line);
-      executeOpQueue();
+      if (checkAndHandleDeadlock()) {
+        executeOperations();
+      }
+      processInputLine(line);
+      executeOperations();
       currentTime += 1;
     }
   }
@@ -151,25 +152,25 @@ public class TransactionManager {
   /**
    * Execute Read/Write Operation
    */
-  private void executeOpQueue() {
+  private void executeOperations() {
     Deque<Operation> operationQueueCopy = new ArrayDeque<>(operationQueue);
     for (Operation operation : operationQueueCopy) {
       if (!transactionMap.containsKey(operation.getTransactionId())) {
         operationQueue.remove(operation);
       } else {
         boolean opSuccess = false;
-        if (operation.getCommand() == OperationType.READ) {
-          if (transactionMap.get(operation.getTransactionId()).getTransactionType()
-              == Constants.TransactionType.RO) {
-            opSuccess = readOnlyOp(operation.getTransactionId(), operation.getVariableId());
-          } else {
-            opSuccess = readOp(operation.getTransactionId(), operation.getVariableId());
+        switch (operation.getOperationType()) {
+          case READ -> {
+            if (transactionMap.get(operation.getTransactionId()).getTransactionType()
+                == TransactionType.RO) {
+              opSuccess = readOnlyOp(operation.getTransactionId(), operation.getVariableId());
+            } else {
+              opSuccess = readOp(operation.getTransactionId(), operation.getVariableId());
+            }
           }
-        } else if (operation.getCommand() == OperationType.WRITE) {
-          opSuccess = writeOp(operation.getTransactionId(), operation.getVariableId(),
+          case WRITE -> opSuccess = writeOp(operation.getTransactionId(), operation.getVariableId(),
               operation.getValue());
-        } else {
-          System.out.println("Invalid Operation");
+          default -> System.out.println("Invalid Operation");
         }
         if (opSuccess) {
           operationQueue.remove(operation);
@@ -184,24 +185,25 @@ public class TransactionManager {
    * @return Success of General Read Operation
    */
   private boolean readOp(String transactionId, String variableId) {
-    if (!transactionMap.containsKey(transactionId)) {
-      System.out.println(
-          "Transaction " + transactionId + " doesn't exist in the transaction table!");
-    } else {
+    if (transactionMap.containsKey(transactionId)) {
       for (DataManager dataManager : sites) {
         if (dataManager.isUp() && dataManager.variableExists(variableId)) {
           Result result = dataManager.readVariable(transactionId, variableId);
           if (result.isSuccess()) {
+
             Transaction transaction = transactionMap.get(transactionId);
             transaction.sitesAccessed.add(dataManager.getSiteId());
             transactionMap.put(transactionId, transaction);
-            System.out.println(String.format("%s reads %s.%s: %d",
-                transactionId, variableId, dataManager.getSiteId(), result.getValue()));
+
+            System.out.printf("%s reads %s.%s: %d%n",
+                transactionId, variableId, dataManager.getSiteId(), result.getValue());
             return true;
           }
-
         }
       }
+    } else {
+      System.out.println(
+          "Transaction " + transactionId + " doesn't exist in the transaction table!");
     }
     return false;
   }
@@ -212,21 +214,21 @@ public class TransactionManager {
    * @return Success of Read-Only Read Operation
    */
   private boolean readOnlyOp(String transactionId, String variableId) {
-    if (!transactionMap.containsKey(transactionId)) {
-      System.out.println(
-          "Transaction " + transactionId + " doesn't exist in the transaction table!");
-    } else {
+    if (transactionMap.containsKey(transactionId)) {
       int ts = transactionMap.get(transactionId).getStartTime();
       for (DataManager dataManager : sites) {
         if (dataManager.isUp() && dataManager.variableExists(variableId)) {
           Result result = dataManager.readVariableSnapshot(variableId, ts);
           if (result.isSuccess()) {
-            System.out.println(String.format("%s (RO) reads %s.%s: %d".format(
-                transactionId, variableId, dataManager.getSiteId(), result.getValue())));
+            System.out.printf("%s (RO) reads %s.%s: %d%n",
+                transactionId, variableId, dataManager.getSiteId(), result.getValue());
             return true;
           }
         }
       }
+    } else {
+      System.out.println(
+          "Transaction " + transactionId + " doesn't exist in the transaction table!");
     }
     return false;
   }
@@ -238,10 +240,7 @@ public class TransactionManager {
    * @return Success of Write Operation
    */
   private boolean writeOp(String transactionId, String variableId, int value) {
-    if (!transactionMap.containsKey(transactionId)) {
-      System.out.println(
-          "Transaction " + transactionId + " doesn't exist in the transaction table!");
-    } else {
+    if (transactionMap.containsKey(transactionId)) {
       boolean allSitesDown = true;
       boolean canGetAllLocks = true;
       for (DataManager dataManager : sites) {
@@ -253,8 +252,8 @@ public class TransactionManager {
           }
         }
       }
-      if ((canGetAllLocks) && !(allSitesDown)) {
-        List<Integer> sitesWritten = new ArrayList<>();
+      if (canGetAllLocks && !allSitesDown) {
+        List<Integer> writeSiteList = new ArrayList<>();
         for (DataManager dataManager : sites) {
           if (dataManager.isUp() && dataManager.variableExists(variableId)) {
             dataManager.writeVariable(transactionId, variableId, value);
@@ -263,14 +262,16 @@ public class TransactionManager {
             transaction.sitesAccessed.add(dataManager.getSiteId());
             transactionMap.put(transactionId, transaction);
 
-            sitesWritten.add(dataManager.getSiteId());
-
+            writeSiteList.add(dataManager.getSiteId());
           }
         }
-        System.out.println(String.format("%s writes %s with value %s to sites %s",
-            transactionId, variableId, value, sitesWritten));
+        System.out.printf("%s writes %s with value %s to sites %s%n",
+            transactionId, variableId, value, writeSiteList);
         return true;
       }
+    } else {
+      System.out.println(
+          "Transaction " + transactionId + " doesn't exist in the transaction table!");
     }
     return false;
   }
@@ -290,34 +291,36 @@ public class TransactionManager {
    *
    * @param line Input Line containing the commands
    */
-  private void executeOperation(String line) {
+  private void processInputLine(String line) {
+    int length = line.length();
     if (line.startsWith("dump")) {
       System.out.println("Dump:");
       dump();
     } else if (line.startsWith("fail")) {
-      int siteId = Integer.parseInt(line.substring(5, line.length() - 1).trim());
+      int siteId = Integer.parseInt(line.substring(5, length - 1).trim());
       fail(siteId);
     } else if (line.startsWith("recover")) {
-      int siteId = Integer.parseInt(line.substring(8, line.length() - 1).trim());
+      int siteId = Integer.parseInt(line.substring(8, length - 1).trim());
       recover(siteId);
     } else if (line.startsWith("end")) {
-      String transactionId = line.substring(4, line.length() - 1).trim();
+      String transactionId = line.substring(4, length - 1).trim();
       end(transactionId);
     } else if (line.startsWith("beginRO")) {
-      String transactionId = line.substring(8, line.length() - 1);
-      beginTransaction(transactionId, Constants.TransactionType.RO, currentTime);
+      String transactionId = line.substring(8, length - 1);
+      beginTransaction(transactionId, TransactionType.RO, currentTime);
     } else if (line.startsWith("begin")) {
-      String transactionId = line.substring(6, line.length() - 1);
-      beginTransaction(transactionId, Constants.TransactionType.RW, currentTime);
+      String transactionId = line.substring(6, length - 1);
+      beginTransaction(transactionId, TransactionType.RW, currentTime);
     } else if (line.startsWith("R")) {
-      String inputLine = line.substring(2, line.length() - 1);
+      String inputLine = line.substring(2, length - 1);
       String[] inputLineSplit = inputLine.split(",");
       String transactionId = inputLineSplit[0].trim();
       String variableName = inputLineSplit[1].trim();
-      if (!transactionMap.containsKey(transactionId)) {
-        System.out.println("Transaction " + transactionId + " doesn't exists!");
-      } else {
+
+      if (transactionMap.containsKey(transactionId)) {
         operationQueue.add(new Operation(OperationType.READ, transactionId, variableName));
+      } else {
+        System.out.println("Transaction " + transactionId + " doesn't exists!");
       }
     } else if (line.startsWith("W")) {
       String inputLine = line.substring(2, line.length() - 1);
@@ -326,16 +329,12 @@ public class TransactionManager {
       String variableName = inputLineSplit[1].trim();
       int value = Integer.parseInt(inputLineSplit[2].trim());
 
-      if (!transactionMap.containsKey(transactionId)) {
-        System.out.println("Transaction " + transactionId + " doesn't exists!");
-      } else {
+      if (transactionMap.containsKey(transactionId)) {
         operationQueue.add(new Operation(OperationType.WRITE, transactionId, variableName, value));
+      } else {
+        System.out.println("Transaction " + transactionId + " doesn't exists!");
       }
-    } else {
-      return;
-//      System.out.println("Main Execution: Invalid Operation | "+ line);
     }
-
   }
 
   /**
@@ -343,18 +342,17 @@ public class TransactionManager {
    * @param transactionType Type of the new Transaction
    * @param time            Start time of the new Transaction
    */
-  private void beginTransaction(String transactionId, Constants.TransactionType transactionType,
+  private void beginTransaction(String transactionId, TransactionType transactionType,
       int time) {
     if (transactionMap.containsKey(transactionId)) {
       System.out.println("Transaction " + transactionId + " already exists!");
     } else {
       Transaction transaction = new Transaction(transactionId, transactionType, time);
-      if (transactionType == Constants.TransactionType.RO) {
-        System.out.println("Transaction " + transactionId + " begins and is read-only.");
-      } else {
-        System.out.println("Transaction " + transactionId + " begins.");
-      }
       transactionMap.put(transactionId, transaction);
+      switch (transactionType) {
+        case RO -> System.out.println("Transaction " + transactionId + " begins and is read-only.");
+        case RW -> System.out.println("Transaction " + transactionId + " begins.");
+      }
     }
   }
 
@@ -370,15 +368,15 @@ public class TransactionManager {
       dataManager.fail(currentTime);
       for (Transaction transaction : transactionMap.values()) {
         if (
-            !(transaction.getTransactionType() == Constants.TransactionType.RO) &&
-                (transaction.isLive) &&
+            !(transaction.getTransactionType() == TransactionType.RO) &&
+                transaction.isLive &&
                 transaction.getSitesAccessed().contains(siteId)
         ) {
           transaction.isLive = false;
         }
       }
     } else {
-      System.out.println("Site " + siteId + " is down!!");
+      System.out.println("Site " + siteId + " is down!");
     }
   }
 
@@ -389,11 +387,11 @@ public class TransactionManager {
    */
   private void recover(int siteId) {
     DataManager dataManager = sites.get(siteId - 1);
-    if (!dataManager.isUp()) {
+    if (dataManager.isUp()) {
+      System.out.println("Site " + siteId + " is already up!");
+    } else {
       System.out.println("Failing Site:" + siteId);
       dataManager.recover(currentTime);
-    } else {
-      System.out.println("Site " + siteId + " is already up!");
     }
   }
 
@@ -403,14 +401,14 @@ public class TransactionManager {
    * @param transactionId ID of the transaction to end.
    */
   private void end(String transactionId) {
-    if (!transactionMap.containsKey(transactionId)) {
-      System.out.println("Transaction " + transactionId + " doesn't exist!");
-    } else {
-      if (!transactionMap.get(transactionId).isLive) {
-        abort(transactionId, true);
-      } else {
+    if (transactionMap.containsKey(transactionId)) {
+      if (transactionMap.get(transactionId).isLive) {
         commit(transactionId, currentTime);
+      } else {
+        abort(transactionId, true);
       }
+    } else {
+      System.out.println("Transaction " + transactionId + " doesn't exist!");
     }
   }
 
@@ -426,7 +424,5 @@ public class TransactionManager {
     }
     transactionMap.remove(transactionId);
     System.out.println("Transaction " + transactionId + " committed!");
-
   }
-
 }

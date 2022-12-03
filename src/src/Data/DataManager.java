@@ -1,10 +1,14 @@
 package Data;
 
-import Transactions.Constants;
-
-import java.util.*;
-
 import static Transactions.Constants.NUM_VARIABLES;
+
+import Transactions.Constants;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class DataManager {
 
@@ -97,7 +101,8 @@ public class DataManager {
         if (currentLock.transactionId.equals(transactionId)) {
           return new Result(true, var.getTempValue().getValue());
         }
-        lockManager.addToLockQueue(new QueuedLock(variableId, Constants.LockType.READ, transactionId));
+        lockManager.addToLockQueue(
+            new QueuedLock(variableId, Constants.LockType.READ, transactionId));
         return new Result(false);
       }
       lockManager.setCurrentLock(new ReadLock(variableId, transactionId));
@@ -124,13 +129,15 @@ public class DataManager {
           }
           return true;
         }
-        lockManager.addToLockQueue(new QueuedLock(variableId, Constants.LockType.WRITE, transactionId));
+        lockManager.addToLockQueue(
+            new QueuedLock(variableId, Constants.LockType.WRITE, transactionId));
         return false;
       }
       if (transactionId.equals(currentLock.transactionId)) {
         return true;
       }
-      lockManager.addToLockQueue(new QueuedLock(variableId, Constants.LockType.WRITE, transactionId));
+      lockManager.addToLockQueue(
+          new QueuedLock(variableId, Constants.LockType.WRITE, transactionId));
       return false;
     }
     return true;
@@ -171,18 +178,19 @@ public class DataManager {
     StringBuilder result = new StringBuilder(
         String.format("site %d [%s] - ", this.siteId, siteStatus));
     for (Variable v : this.dataMap.values()) {
-      String varStr = String.format("%s: %d, ", v.variableId, v.getMostRecentlyCommittedValue().getValue());
+      String varStr = String.format("%s: %d, ", v.variableId,
+          v.getMostRecentlyCommittedValue().getValue());
       result.append(varStr);
     }
     System.out.println(result);
   }
 
   public void abortTransaction(String transactionId) {
-    for(LockManager lockManager : this.lockMap.values()) {
+    for (LockManager lockManager : this.lockMap.values()) {
       lockManager.releaseTransactionLock(transactionId);
       List<QueuedLock> tempQ = new ArrayList<>(lockManager.queue);
-      for(QueuedLock queuedLock : tempQ) {
-        if(queuedLock.transactionId.equals(transactionId)) {
+      for (QueuedLock queuedLock : tempQ) {
+        if (queuedLock.transactionId.equals(transactionId)) {
           lockManager.queue.remove(queuedLock);
         }
       }
@@ -194,7 +202,7 @@ public class DataManager {
     for (LockManager lockManager : this.lockMap.values()) {
       lockManager.releaseTransactionLock(transactionId);
       for (QueuedLock queuedLock : lockManager.queue) {
-        if(queuedLock.transactionId.equals(transactionId)) {
+        if (queuedLock.transactionId.equals(transactionId)) {
           return;
         }
       }
@@ -266,7 +274,8 @@ public class DataManager {
 
   boolean currentBlocksQueued(Lock currentLock, Lock queuedLock) {
     if (currentLock.lockType == Constants.LockType.READ) {
-      if (queuedLock.lockType == Constants.LockType.READ || (currentLock.transactionIds.size() == 1 && currentLock.transactionIds.contains(queuedLock.transactionId))
+      if (queuedLock.lockType == Constants.LockType.READ || (currentLock.transactionIds.size() == 1
+          && currentLock.transactionIds.contains(queuedLock.transactionId))
       ) {
         return false;
       }
@@ -288,7 +297,8 @@ public class DataManager {
     for (Map.Entry<String, LockManager> entry : this.lockMap.entrySet()) {
       LockManager lockManager = entry.getValue();
 
-      if (lockManager.currentLock == null || lockManager.queue == null || lockManager.queue.isEmpty()) {
+      if (lockManager.currentLock == null || lockManager.queue == null
+          || lockManager.queue.isEmpty()) {
         continue;
       }
 

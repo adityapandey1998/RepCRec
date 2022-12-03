@@ -1,47 +1,50 @@
 package Transactions;
 
+import Transactions.Constants.OperationType;
+
 /**
  * Read/Write Operation Class
+ *
  * @author Aditya Pandey
  */
 public class Operation {
 
-  public Constants.OperationType command;
+  public OperationType operationType;
   public String transactionId;
   public String variableId;
   public int value;
 
   /**
-   * @param command       This is a Read Constructor
+   * @param operationType This is a Read Constructor
    * @param transactionId Transaction ID
    * @param variableId    Variable ID
    */
-  public Operation(Constants.OperationType command, String transactionId, String variableId) {
-    this.command = command;
+  public Operation(OperationType operationType, String transactionId, String variableId) {
+    this.operationType = operationType;
     this.transactionId = transactionId;
     this.variableId = variableId;
   }
 
   /**
-   * @param command       This is a Write Constructor
+   * @param operationType This is a Write Constructor
    * @param transactionId Transaction ID
    * @param variableId    Variable ID
    * @param value         Value to assign
    */
-  public Operation(Constants.OperationType command, String transactionId, String variableId,
+  public Operation(OperationType operationType, String transactionId, String variableId,
       int value) {
-    this.command = command;
+    this.operationType = operationType;
     this.transactionId = transactionId;
     this.variableId = variableId;
     this.value = value;
   }
 
-  public Constants.OperationType getCommand() {
-    return command;
+  public OperationType getOperationType() {
+    return operationType;
   }
 
-  public void setCommand(Constants.OperationType command) {
-    this.command = command;
+  public void setOperationType(OperationType operationType) {
+    this.operationType = operationType;
   }
 
   public String getTransactionId() {
@@ -71,7 +74,7 @@ public class Operation {
   @Override
   public String toString() {
     return "Operations{" +
-        "command='" + command + '\'' +
+        "operationType='" + operationType + '\'' +
         ", transactionId='" + transactionId + '\'' +
         ", variableId='" + variableId + '\'' +
         ", value=" + value +

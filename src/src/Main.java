@@ -1,5 +1,6 @@
 import Transactions.TransactionManager;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * This class is the main entry point to process the transactions. The input file needs to be
@@ -14,12 +15,11 @@ public class Main {
    */
   public static void main(String[] args) {
     String fileName = args[0];
-    String filePath = new File(fileName).getAbsolutePath();
-
     TransactionManager transactionManager = new TransactionManager();
     try {
+      String filePath = new File(fileName).getAbsolutePath();
       transactionManager.processInput(filePath);
-    } catch (Exception e) {
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }

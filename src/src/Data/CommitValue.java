@@ -2,6 +2,7 @@ package Data;
 
 /**
  * Class to represent committed values in a transaction.
+ *
  * @author Shubham Jha
  */
 public class CommitValue {

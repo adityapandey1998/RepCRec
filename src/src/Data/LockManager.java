@@ -8,6 +8,7 @@ import java.util.List;
 /**
  * Lock Manager handles all the setting, promoting, sharing and releasing of transaction and
  * variable locks.
+ *
  * @author Shubham Jha
  */
 public class LockManager {
@@ -55,15 +56,16 @@ public class LockManager {
 
   /**
    * Add a new lock to the lock queue
+   *
    * @param newLock New Queued lock
    */
   public void addToLockQueue(QueuedLock newLock) {
     for (QueuedLock queuedLock : this.queue) {
-      if (queuedLock.transactionId.equals(newLock.transactionId))
-              if (queuedLock.lockType == newLock.lockType
-                  || newLock.lockType == Constants.LockType.READ)
-       {
-        return;
+      if (queuedLock.transactionId.equals(newLock.transactionId)) {
+        if (queuedLock.lockType == newLock.lockType
+            || newLock.lockType == Constants.LockType.READ) {
+          return;
+        }
       }
     }
     this.queue.add(newLock);
@@ -87,6 +89,7 @@ public class LockManager {
 
   /**
    * releasing transaction lock.
+   *
    * @param transactionId Transaction ID
    */
   public void releaseTransactionLock(String transactionId) {

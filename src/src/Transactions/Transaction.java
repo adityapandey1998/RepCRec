@@ -1,10 +1,12 @@
 package Transactions;
 
+import Transactions.Constants.TransactionType;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Transaction Class
+ *
  * @author Aditya Pandey
  */
 public class Transaction {
@@ -12,7 +14,7 @@ public class Transaction {
   public String transactionId;
   public Boolean isLive;
   public int startTime;
-  public Constants.TransactionType transactionType;
+  public TransactionType transactionType;
   public List<Integer> sitesAccessed;
 
   /**
@@ -20,7 +22,7 @@ public class Transaction {
    * @param transactionType Transaction Type - Read-Only/Read-Write
    * @param startTime       Start Time of the Transaction
    */
-  public Transaction(String transactionId, Constants.TransactionType transactionType,
+  public Transaction(String transactionId, TransactionType transactionType,
       int startTime) {
     this.transactionId = transactionId;
     this.isLive = true;
@@ -53,11 +55,11 @@ public class Transaction {
     this.startTime = startTime;
   }
 
-  public Constants.TransactionType getTransactionType() {
+  public TransactionType getTransactionType() {
     return transactionType;
   }
 
-  public void setTransactionType(Constants.TransactionType transactionType) {
+  public void setTransactionType(TransactionType transactionType) {
     this.transactionType = transactionType;
   }
 
