@@ -99,8 +99,6 @@ public class TransactionManager {
                     }
                 }
 
-
-//                readValue(t[0], Integer.parseInt(t[1].substring(t[1].indexOf("x") + 1)));
             } else if (line.startsWith("W")) {
                 String inputLine = line.substring(2, line.length() - 1);
                 String[] inputLineSplit = inputLine.split(",");
