@@ -204,7 +204,7 @@ public class DataManager {
       String variableId = entry.getKey();
       LockManager lockManager = entry.getValue();
 
-      if (lockManager.queue != null) {
+      if (lockManager.queue != null && !lockManager.queue.isEmpty()) {
         if (lockManager.currentLock == null) {
           Lock firstQueueLock = lockManager.queue.get(0);
           lockManager.queue.remove(0);
