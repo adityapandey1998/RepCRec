@@ -174,6 +174,18 @@ public class DataManager {
     System.out.println(output);
   }
 
+  public void abort(String transactionId) {
+    for(LockManager lockManager : this.lockTable.values()) {
+      lockManager.releaseCurrentLockByTransaction(transactionId);
+      for(QueuedLock queuedLock : lockManager.queue) {
+        if(queuedLock.transactionId.equals(transactionId)) {
+          lockManager.queue.remove(queuedLock);
+        }
+      }
+    }
+    resolveLockTable();
+  }
+
   public void commit(String transactionId, int commitTimestamp) {
     for (LockManager lockManager : this.lockTable.values()) {
       lockManager.releaseCurrentLockByTransaction(transactionId);
